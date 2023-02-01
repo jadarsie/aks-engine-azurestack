@@ -5895,6 +5895,7 @@ parameters:
   skuName: Standard_LRS
   kind: managed
   cachingMode: ReadOnly
+  fsType: ext4
 reclaimPolicy: Delete
 allowVolumeExpansion: true
   {{- if HasAgentPoolAvailabilityZones}}
@@ -5918,6 +5919,7 @@ parameters:
   skuName: Premium_LRS
   kind: managed
   cachingMode: ReadOnly
+  fsType: ext4
 reclaimPolicy: Delete
 allowVolumeExpansion: true
   {{- if HasAgentPoolAvailabilityZones}}
@@ -5941,6 +5943,7 @@ parameters:
   skuName: Standard_LRS
   kind: managed
   cachingMode: ReadOnly
+  fsType: ext4
 reclaimPolicy: Delete
 allowVolumeExpansion: true
   {{- if HasAgentPoolAvailabilityZones}}
