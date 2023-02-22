@@ -17,16 +17,16 @@ PROXY_CERT_LOCK_FILE="/tmp/create_cert.fifl"
 
 if [[ -z ${COSMOS_URI} ]]; then
   ETCDCTL_ENDPOINTS="${ETCDCTL_ENDPOINTS:=https://127.0.0.1:2379}"
-  ETCDCTL_CA_FILE="${ETCDCTL_CA_FILE:=/etc/kubernetes/certs/ca.crt}"
-  ETCD_CA_PARAM="--cacert=${ETCDCTL_CA_FILE}"
+  ETCDCTL_CACERT="${ETCDCTL_CACERT:=/etc/kubernetes/certs/ca.crt}"
+  ETCD_CA_PARAM="--cacert=${ETCDCTL_CACERT}"
 else
   ETCDCTL_ENDPOINTS="${ETCDCTL_ENDPOINTS:=https://${COSMOS_URI}:2379}"
   ETCD_CA_PARAM=""
 fi
-ETCDCTL_KEY_FILE="${ETCDCTL_KEY_FILE:=/etc/kubernetes/certs/etcdclient.key}"
-ETCDCTL_CERT_FILE="${ETCDCTL_CERT_FILE:=/etc/kubernetes/certs/etcdclient.crt}"
+ETCDCTL_KEY="${ETCDCTL_KEY:=/etc/kubernetes/certs/etcdclient.key}"
+ETCDCTL_CERT="${ETCDCTL_CERT:=/etc/kubernetes/certs/etcdclient.crt}"
 
-ETCDCTL_PARAMS="--command-timeout=30s --cert=${ETCDCTL_CERT_FILE} --key=${ETCDCTL_KEY_FILE} ${ETCD_CA_PARAM} --endpoints=${ETCDCTL_ENDPOINTS}"
+ETCDCTL_PARAMS="--command-timeout=30s"
 RANDFILE=$(mktemp)
 export RANDFILE
 

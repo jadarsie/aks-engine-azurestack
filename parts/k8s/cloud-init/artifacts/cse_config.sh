@@ -98,14 +98,14 @@ configureEtcd() {
   chown -R etcd:etcd /var/lib/etcddisk
   systemctlEtcd || exit {{GetCSEErrorCode "ERR_ETCD_START_TIMEOUT"}}
   for i in $(seq 1 600); do
-    MEMBER="$(sudo -E etcdctl member list | grep -E ${NODE_NAME} | cut -d':' -f 1)"
+    MEMBER="$(sudo -E etcdctl member list | grep -E ${NODE_NAME} | cut -d',' -f 1)"
     if [ "$MEMBER" != "" ]; then
       break
     else
       sleep 1
     fi
   done
-  retrycmd 120 5 25 sudo -E etcdctl member update $MEMBER ${etcd_peer_url} || exit {{GetCSEErrorCode "ERR_ETCD_CONFIG_FAIL"}}
+  retrycmd 120 5 25 sudo -E etcdctl member update $MEMBER --peer-urls=${etcd_peer_url} || exit {{GetCSEErrorCode "ERR_ETCD_CONFIG_FAIL"}}
 }
 configureChrony() {
   sed -i "s/makestep.*/makestep 1.0 -1/g" /etc/chrony/chrony.conf

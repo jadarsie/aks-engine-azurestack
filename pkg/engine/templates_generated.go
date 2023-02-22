@@ -16308,14 +16308,14 @@ configureEtcd() {
   chown -R etcd:etcd /var/lib/etcddisk
   systemctlEtcd || exit {{GetCSEErrorCode "ERR_ETCD_START_TIMEOUT"}}
   for i in $(seq 1 600); do
-    MEMBER="$(sudo -E etcdctl member list | grep -E ${NODE_NAME} | cut -d':' -f 1)"
+    MEMBER="$(sudo -E etcdctl member list | grep -E ${NODE_NAME} | cut -d',' -f 1)"
     if [ "$MEMBER" != "" ]; then
       break
     else
       sleep 1
     fi
   done
-  retrycmd 120 5 25 sudo -E etcdctl member update $MEMBER ${etcd_peer_url} || exit {{GetCSEErrorCode "ERR_ETCD_CONFIG_FAIL"}}
+  retrycmd 120 5 25 sudo -E etcdctl member update $MEMBER --peer-urls=${etcd_peer_url} || exit {{GetCSEErrorCode "ERR_ETCD_CONFIG_FAIL"}}
 }
 configureChrony() {
   sed -i "s/makestep.*/makestep 1.0 -1/g" /etc/chrony/chrony.conf
@@ -18441,8 +18441,6 @@ After=network.target var-lib-etcddisk.mount
 Wants=network-online.target var-lib-etcddisk.mount
 [Service]
 Environment=DAEMON_ARGS=
-Environment=ETCD_NAME=%H
-Environment=ETCD_DATA_DIR=
 EnvironmentFile=-/etc/default/%p
 Type=notify
 User=etcd
@@ -18488,16 +18486,16 @@ PROXY_CERT_LOCK_FILE="/tmp/create_cert.fifl"
 
 if [[ -z ${COSMOS_URI} ]]; then
   ETCDCTL_ENDPOINTS="${ETCDCTL_ENDPOINTS:=https://127.0.0.1:2379}"
-  ETCDCTL_CA_FILE="${ETCDCTL_CA_FILE:=/etc/kubernetes/certs/ca.crt}"
-  ETCD_CA_PARAM="--cacert=${ETCDCTL_CA_FILE}"
+  ETCDCTL_CACERT="${ETCDCTL_CACERT:=/etc/kubernetes/certs/ca.crt}"
+  ETCD_CA_PARAM="--cacert=${ETCDCTL_CACERT}"
 else
   ETCDCTL_ENDPOINTS="${ETCDCTL_ENDPOINTS:=https://${COSMOS_URI}:2379}"
   ETCD_CA_PARAM=""
 fi
-ETCDCTL_KEY_FILE="${ETCDCTL_KEY_FILE:=/etc/kubernetes/certs/etcdclient.key}"
-ETCDCTL_CERT_FILE="${ETCDCTL_CERT_FILE:=/etc/kubernetes/certs/etcdclient.crt}"
+ETCDCTL_KEY="${ETCDCTL_KEY:=/etc/kubernetes/certs/etcdclient.key}"
+ETCDCTL_CERT="${ETCDCTL_CERT:=/etc/kubernetes/certs/etcdclient.crt}"
 
-ETCDCTL_PARAMS="--command-timeout=30s --cert=${ETCDCTL_CERT_FILE} --key=${ETCDCTL_KEY_FILE} ${ETCD_CA_PARAM} --endpoints=${ETCDCTL_ENDPOINTS}"
+ETCDCTL_PARAMS="--command-timeout=30s"
 RANDFILE=$(mktemp)
 export RANDFILE
 
@@ -20269,16 +20267,16 @@ MASTER_CONTAINER_ADDONS_PLACEHOLDER
     MASTER_URLS=$(echo $MASTER_URLS | sed "s/.$//")
     echo $MASTER_URLS
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:$ETCD_CLIENT_PORT" /etc/environment
-    sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
-    sudo sed -i "1iETCDCTL_KEY_FILE={{WrapAsVariable "etcdClientKeyFilepath"}}" /etc/environment
-    sudo sed -i "1iETCDCTL_CERT_FILE={{WrapAsVariable "etcdClientCertFilepath"}}" /etc/environment
+    sudo sed -i "1iETCDCTL_CACERT={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
+    sudo sed -i "1iETCDCTL_KEY={{WrapAsVariable "etcdClientKeyFilepath"}}" /etc/environment
+    sudo sed -i "1iETCDCTL_CERT={{WrapAsVariable "etcdClientCertFilepath"}}" /etc/environment
     sudo sed -i "/^DAEMON_ARGS=/d" /etc/default/etcd
     /bin/echo DAEMON_ARGS=--name $MASTER_VM_NAME --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file=/etc/kubernetes/certs/etcdpeer$MASTER_INDEX.crt --peer-key-file=/etc/kubernetes/certs/etcdpeer$MASTER_INDEX.key --initial-advertise-peer-urls "https://$PRIVATE_IP:$ETCD_SERVER_PORT" --listen-peer-urls "https://$PRIVATE_IP:$ETCD_SERVER_PORT" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "https://$PRIVATE_IP:$ETCD_CLIENT_PORT" --listen-client-urls "https://$PRIVATE_IP:$ETCD_CLIENT_PORT,https://127.0.0.1:$ETCD_CLIENT_PORT" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster $MASTER_URLS --data-dir "/var/lib/etcddisk" --initial-cluster-state "new" --listen-metrics-urls "http://$PRIVATE_IP:2480" --quota-backend-bytes={{GetEtcdStorageLimitGB}} | tee -a /etc/default/etcd
   {{else}}
     sudo sed -i "1iETCDCTL_ENDPOINTS=https://127.0.0.1:2379" /etc/environment
-    sudo sed -i "1iETCDCTL_CA_FILE={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
-    sudo sed -i "1iETCDCTL_KEY_FILE={{WrapAsVariable "etcdClientKeyFilepath"}}" /etc/environment
-    sudo sed -i "1iETCDCTL_CERT_FILE={{WrapAsVariable "etcdClientCertFilepath"}}" /etc/environment
+    sudo sed -i "1iETCDCTL_CACERT={{WrapAsVariable "etcdCaFilepath"}}" /etc/environment
+    sudo sed -i "1iETCDCTL_KEY={{WrapAsVariable "etcdClientKeyFilepath"}}" /etc/environment
+    sudo sed -i "1iETCDCTL_CERT={{WrapAsVariable "etcdClientCertFilepath"}}" /etc/environment
     sudo sed -i "/^DAEMON_ARGS=/d" /etc/default/etcd
     /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster {{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk" --initial-cluster-state "new" --listen-metrics-urls "{{WrapAsVerbatim "variables('masterEtcdMetricURLs')[copyIndex(variables('masterOffset'))]"}}" --quota-backend-bytes={{GetEtcdStorageLimitGB}} | tee -a /etc/default/etcd
   {{end}}
