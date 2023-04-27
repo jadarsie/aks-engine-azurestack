@@ -30,6 +30,7 @@ func (cs *ContainerService) setKubeletConfig(isUpgrade bool) {
 		"--tls-private-key-file":        "/etc/kubernetes/certs/kubeletserver.key",
 		"--v":                           "2",
 		"--volume-plugin-dir":           "/etc/kubernetes/volumeplugins",
+		"--feature-gates":               "PodSecurity=true",
 	}
 
 	for key := range staticLinuxKubeletConfig {

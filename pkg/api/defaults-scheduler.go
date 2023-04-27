@@ -13,8 +13,9 @@ var staticSchedulerConfig = map[string]string{
 
 // defaultSchedulerConfig provides targeted defaults, but is user-overridable
 var defaultSchedulerConfig = map[string]string{
-	"--v":         "2",
-	"--profiling": DefaultKubernetesSchedulerEnableProfiling,
+	"--v":             "2",
+	"--profiling":     DefaultKubernetesSchedulerEnableProfiling,
+	"--feature-gates": "PodSecurity=true",
 }
 
 func (cs *ContainerService) setSchedulerConfig() {

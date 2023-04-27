@@ -67,6 +67,7 @@ func (cs *ContainerService) setAPIServerConfig() {
 		"--profiling":                     DefaultKubernetesAPIServerEnableProfiling,
 		"--tls-cipher-suites":             TLSStrongCipherSuitesAPIServer,
 		"--v":                             DefaultKubernetesAPIServerVerbosity,
+		"--feature-gates":                 "PodSecurity=true",
 	}
 
 	// Aggregated API configuration

@@ -66,6 +66,7 @@ func (cs *ContainerService) setControllerManagerConfig() {
 		"--terminated-pod-gc-threshold":     DefaultKubernetesCtrlMgrTerminatedPodGcThreshold,
 		"--use-service-account-credentials": DefaultKubernetesCtrlMgrUseSvcAccountCreds,
 		"--profiling":                       DefaultKubernetesCtrMgrEnableProfiling,
+		"--feature-gates":                   "PodSecurity=true",
 	}
 
 	// If no user-configurable controller-manager config values exists, use the defaults
