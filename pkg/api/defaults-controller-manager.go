@@ -68,6 +68,7 @@ func (cs *ContainerService) setControllerManagerConfig() {
 		"--use-service-account-credentials": DefaultKubernetesCtrlMgrUseSvcAccountCreds,
 		"--profiling":                       DefaultKubernetesCtrMgrEnableProfiling,
 		"--feature-gates":                   "PodSecurity=true",
+		"--tls-min-version":                 "VersionTLS12",
 	}
 
 	// If no user-configurable controller-manager config values exists, use the defaults
