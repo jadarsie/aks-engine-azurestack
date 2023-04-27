@@ -13,6 +13,7 @@ var staticSchedulerConfig = map[string]string{
 
 // defaultSchedulerConfig provides targeted defaults, but is user-overridable
 var defaultSchedulerConfig = map[string]string{
+	"--bind-address":  "127.0.0.1",
 	"--v":             "2",
 	"--profiling":     DefaultKubernetesSchedulerEnableProfiling,
 	"--feature-gates": "PodSecurity=true",
