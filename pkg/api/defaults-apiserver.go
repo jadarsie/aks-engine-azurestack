@@ -69,6 +69,7 @@ func (cs *ContainerService) setAPIServerConfig() {
 		"--v":                             DefaultKubernetesAPIServerVerbosity,
 		"--feature-gates":                 "PodSecurity=true",
 		"--tls-min-version":               "VersionTLS12",
+		"--request-timeout":               "1m",
 	}
 
 	// Aggregated API configuration
