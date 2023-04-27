@@ -5746,45 +5746,8 @@ func k8sAddonsArcOnboardingYaml() (*asset, error) {
 
 var _k8sAddonsAuditPolicyYaml = []byte(`apiVersion: audit.k8s.io/v1
 kind: Policy
-omitStages:
-  - RequestReceived
 rules:
-  - level: RequestResponse
-    resources:
-    - group: ""
-      resources: ["pods"]
-  - level: Metadata
-    resources:
-    - group: ""
-      resources: ["pods/log", "pods/status"]
-  - level: None
-    users: ["system:kube-proxy"]
-    verbs: ["watch"]
-    resources:
-    - group: ""
-      resources: ["endpoints", "services"]
-  - level: None
-    userGroups: ["system:authenticated"]
-    nonResourceURLs:
-    - /api*
-    - /version
-  - level: Request
-    resources:
-    - group: ""
-      resources: ["configmaps"]
-    namespaces: ["kube-system"]
-  - level: Request
-    resources:
-    - group: ""
-      resources: ["secrets"]
-  - level: Request
-    resources:
-    - group: ""
-    - group: extensions
-  - level: Metadata
-    omitStages:
-      - RequestReceived
-`)
+- level: RequestResponse`)
 
 func k8sAddonsAuditPolicyYamlBytes() ([]byte, error) {
 	return _k8sAddonsAuditPolicyYaml, nil
@@ -20329,7 +20292,7 @@ MASTER_CONTAINER_ADDONS_PLACEHOLDER
     sudo sed -i "1iETCDCTL_KEY_FILE={{WrapAsVariable "etcdClientKeyFilepath"}}" /etc/environment
     sudo sed -i "1iETCDCTL_CERT_FILE={{WrapAsVariable "etcdClientCertFilepath"}}" /etc/environment
     sudo sed -i "/^DAEMON_ARGS=/d" /etc/default/etcd
-    /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster {{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk" --initial-cluster-state "new" --listen-metrics-urls "{{WrapAsVerbatim "variables('masterEtcdMetricURLs')[copyIndex(variables('masterOffset'))]"}}" --quota-backend-bytes={{GetEtcdStorageLimitGB}} | tee -a /etc/default/etcd
+    /bin/echo DAEMON_ARGS=--name "{{WrapAsVerbatim "variables('masterVMNames')[copyIndex(variables('masterOffset'))]"}}" --peer-client-cert-auth --peer-trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --peer-cert-file={{WrapAsVerbatim "variables('etcdPeerCertFilepath')[copyIndex(variables('masterOffset'))]"}} --peer-key-file={{WrapAsVerbatim "variables('etcdPeerKeyFilepath')[copyIndex(variables('masterOffset'))]"}} --initial-advertise-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-peer-urls "{{WrapAsVerbatim "variables('masterEtcdPeerURLs')[copyIndex(variables('masterOffset'))]"}}" --client-cert-auth --trusted-ca-file={{WrapAsVariable "etcdCaFilepath"}} --cert-file={{WrapAsVariable "etcdServerCertFilepath"}} --key-file={{WrapAsVariable "etcdServerKeyFilepath"}} --advertise-client-urls "{{WrapAsVerbatim "variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))]"}}" --listen-client-urls "{{WrapAsVerbatim "concat(variables('masterEtcdClientURLs')[copyIndex(variables('masterOffset'))], ',https://127.0.0.1:', variables('masterEtcdClientPort'))"}}" --initial-cluster-token "k8s-etcd-cluster" --initial-cluster {{WrapAsVerbatim "variables('masterEtcdClusterStates')[div(variables('masterCount'), 2)]"}} --data-dir "/var/lib/etcddisk" --initial-cluster-state "new" --listen-metrics-urls "{{WrapAsVerbatim "variables('masterEtcdMetricURLs')[copyIndex(variables('masterOffset'))]"}}" --quota-backend-bytes={{GetEtcdStorageLimitGB}} --peer-auto-tls --auto-tls | tee -a /etc/default/etcd
   {{end}}
 {{end}}
     #EOF
