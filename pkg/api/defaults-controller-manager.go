@@ -60,6 +60,7 @@ func (cs *ContainerService) setControllerManagerConfig() {
 
 	// Default controller-manager config
 	defaultControllerManagerConfig := map[string]string{
+		"--bind-address":                    "127.0.0.1",
 		"--node-monitor-grace-period":       ctrlMgrNodeMonitorGracePeriod,
 		"--pod-eviction-timeout":            ctrlMgrPodEvictionTimeout,
 		"--route-reconciliation-period":     ctrlMgrRouteReconciliationPeriod,
