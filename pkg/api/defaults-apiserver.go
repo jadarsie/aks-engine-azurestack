@@ -68,6 +68,7 @@ func (cs *ContainerService) setAPIServerConfig() {
 		"--tls-cipher-suites":             TLSStrongCipherSuitesAPIServer,
 		"--v":                             DefaultKubernetesAPIServerVerbosity,
 		"--feature-gates":                 "PodSecurity=true",
+		"--tls-min-version":               "VersionTLS12",
 	}
 
 	// Aggregated API configuration
