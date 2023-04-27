@@ -103,7 +103,7 @@ func (cs *ContainerService) setKubeletConfig(isUpgrade bool) {
 		"--pod-max-pids":                      strconv.Itoa(DefaultKubeletPodMaxPIDs),
 		"--image-pull-progress-deadline":      "30m",
 		"--enforce-node-allocatable":          "pods",
-		"--streaming-connection-idle-timeout": "4h",
+		"--streaming-connection-idle-timeout": "5m",
 		"--tls-cipher-suites":                 TLSStrongCipherSuitesKubelet,
 		"--healthz-port":                      DefaultKubeletHealthzPort,
 	}
