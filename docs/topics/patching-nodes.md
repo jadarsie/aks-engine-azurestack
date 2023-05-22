@@ -1,9 +1,15 @@
 # Patching Cluster Nodes
 
-To favor a consistent behavior, AKS Engine's approach to infrastructure management is immutability.
-By default, cluster nodes are not patched on bootstrap nor on a regular basis. 
+AKS Engine allows users to control node OS patching through the `linuxProfile` API model configuration object.
 
-To prevent node patching, AKS Engine creates file `/etc/apt/apt.conf.d/99periodic` with the following content:
+## Enable Unattended Upgrades
+
+By setting configuration property `linuxProfile.enableUnattendedUpgrades` to `false`, users are able to disable unatteded upgrades.
+If set to `true`, the default OS behavior remains unaltered.
+
+On Azure Stack Hub, the default value of `linuxProfile.enableUnattendedUpgrades` is `true`.
+
+AKS Engine's mechanism to prevent node patching is to create file `/etc/apt/apt.conf.d/99periodic` with the following content:
 
 ```
 APT::Periodic::Update-Package-Lists "0";
@@ -12,30 +18,54 @@ APT::Periodic::AutocleanInterval "0";
 APT::Periodic::Unattended-Upgrade "0";
 ```
 
-## Enable Node Patching
+More information [here](https://help.ubuntu.com/community/AutomaticSecurityUpdates) for Ubuntu Server's default behavior.
 
-AKS Engine allows changes to the default node patching configuration in situations where applying the latest security patches beats the benefits of immutable infrastructure.
+## Run Unattended Upgrades On Bootstrap
 
-### Enable Unattended Upgrades
+Setting the configuration property `linuxProfile.runUnattendedUpgradesOnBootstrap` to `true`
+forces the execution of the unattended upgrade process right after each Linux node VM comes online for the first time.
 
-Setting `linuxProfile.enableUnattendedUpgrades` to `"true"` configures each Linux node VM (including control plane node VMs) to run `/usr/bin/unattended-upgrade` in the background according to a daily schedule. If enabled, the default `unattended-upgrades` package configuration will be used as provided by the Ubuntu distro version running on the VM. More information [here](https://help.ubuntu.com/community/AutomaticSecurityUpdates).
+When `linuxProfile.runUnattendedUpgradesOnBootstrap` is set to `true`,
+the upgrade process will be triggered regardless of the value of `linuxProfile.enableUnattendedUpgrades`.
 
-### Run Unattended Upgrades On Bootstrap Only
+On Azure Stack Hub, the default value of `linuxProfile.runUnattendedUpgradesOnBootstrap` is `false`.
 
-An intermediate solution is to set `linuxProfile.runUnattendedUpgradesOnBootstrap` to `"true"`. This will invoke an unattended upgrade when each Linux node VM comes online for the first time.
+## When to Enable Node Patching
 
-Setting the `linuxProfile.runUnattendedUpgradesOnBootstrap` option allows cluster administrators to perform cluster upgrades using a [Blue Green approach](https://en.wikipedia.org/wiki/Blue-green_deployment).
+The decision of enabling unattended upgrades or not is a trade off between security and consistency.
+
+Enabling unattended upgrades ensures that the latest security patches will be downloaded and installed.
+On the contrary, disabling them allows the adoptiong of the `immutable infrastructure` paradigm.
 
 ## Orchestrate Node Reboots
 
-Some OS patches are only effective after a node reboot. To ensure that the nodes are rebooted in a non-disruptive way, you can deploy the [kured](https://github.com/weaveworks/kured) daemonset.
+Some OS patches are only effective after a node reboot.
+Deploying the [kured](https://github.com/weaveworks/kured) daemonset ensure that the nodes are rebooted in a non-disruptive way.
 
 The `kured` daemonset can be installed by following this [instructions](https://kured.dev/docs/installation/):
 
 ```bash
-# Find the appropiate version for your cluster https://kured.dev/docs/installation/#kubernetes--os-compatibility
-latest=$(curl -s https://api.github.com/repos/kubereboot/kured/releases | jq -r '.[0].tag_name')
+# Find the appropiate version for the target cluster https://kured.dev/docs/installation/#kubernetes--os-compatibility
+version=$(curl -s https://api.github.com/repos/kubereboot/kured/releases | jq -r '.[0].tag_name')
+
+# Download resources yaml
+curl -sLO "https://github.com/kubereboot/kured/releases/download/${version}/kured-${version}-dockerhub.yaml"
+
+# Add nodeSelector to the DaemonSet pod spec to constraint to Linux nodes
+# spec:
+#   nodeSelector:
+#     kubernetes.io/os: linux
+
+# Override tolerations to the DaemonSet pod spec to deploy to control plane nodes
+# spec:
+#   tolerations:
+#   - key: node-role.kubernetes.io/control-plane
+#     effect: NoSchedule
+#     value: "true"
+#   - key: node-role.kubernetes.io/master
+#     effect: NoSchedule
+#     value: "true"
 
 # Check https://kured.dev/docs/configuration/ for configuration options
-kubectl apply -f "https://github.com/kubereboot/kured/releases/download/$latest/kured-$latest-dockerhub.yaml"
+kubectl apply -f kured-${version}-dockerhub.yaml
 ```
