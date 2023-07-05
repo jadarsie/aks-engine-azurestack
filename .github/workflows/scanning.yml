@@ -1,0 +1,12 @@
+name: Scanning
+on:
+  workflow_dispatch:
+jobs:
+  chocolatey:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Scan image
+        uses: anchore/scan-action@v3
+        with:
+          image: "mcr.microsoft.com/oss/busybox/busybox:1.33.1"
