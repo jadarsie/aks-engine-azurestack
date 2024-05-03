@@ -43,8 +43,6 @@ type AKSEngineClient interface {
 	RestartVirtualMachine(ctx context.Context, resourceGroup, name string) error
 	// DeleteVirtualMachine deletes the specified virtual machine.
 	DeleteVirtualMachine(ctx context.Context, resourceGroup, name string) error
-	// GetAvailabilitySet retrieves the specified VM availability set.
-	GetAvailabilitySet(ctx context.Context, resourceGroup, availabilitySet string) (armcompute.AvailabilitySet, error)
 	// GetVirtualMachinePowerState returns the virtual machine's PowerState status code
 	GetVirtualMachinePowerState(ctx context.Context, resourceGroup, name string) (string, error)
 

@@ -16,7 +16,7 @@ import (
 func (az *AzureClient) DeleteRoleAssignmentByID(ctx context.Context, roleAssignmentID string) (*armauthorization.RoleAssignment, error) {
 	response, err := az.authorizationClient.DeleteByID(ctx, roleAssignmentID, nil)
 	if err != nil {
-		return &armauthorization.RoleAssignment{}, errors.Wrapf(err, "deleting role assignment %s", roleAssignmentID)
+		return nil, errors.Wrapf(err, "deleting role assignment %s", roleAssignmentID)
 	}
 	return &response.RoleAssignment, err
 }

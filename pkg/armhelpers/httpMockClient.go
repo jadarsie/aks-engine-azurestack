@@ -262,30 +262,6 @@ func (mc HTTPMockClient) RegisterListVirtualMachines() {
 	})
 }
 
-// RegisterGetAvailabilitySet registers the mock response for GetAvailabilitySet.
-func (mc HTTPMockClient) RegisterGetAvailabilitySet() {
-	pattern := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/availabilitySets/vmavailabilitysetName", mc.SubscriptionID, mc.ResourceGroup)
-	mc.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Get("api-version") != mc.ComputeAPIVersion {
-			w.WriteHeader(http.StatusNotFound)
-		} else {
-			_, _ = fmt.Fprint(w, mc.ResponseGetAvailabilitySet)
-		}
-	})
-}
-
-// RegisterGetAvailabilitySetFaultDomainCount registers a mock response for GetAvailabilitySet.
-func (mc HTTPMockClient) RegisterGetAvailabilitySetFaultDomainCount() {
-	pattern := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/availabilitySets/id1", mc.SubscriptionID, mc.ResourceGroup)
-	mc.mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Get("api-version") != mc.ComputeAPIVersion {
-			w.WriteHeader(http.StatusNotFound)
-		} else {
-			_, _ = fmt.Fprint(w, mc.ResponseGetAvailabilitySet)
-		}
-	})
-}
-
 // RegisterVirtualMachineEndpoint registers mock responses for the Microsoft.Compute/virtualMachines endpoint
 func (mc *HTTPMockClient) RegisterVirtualMachineEndpoint() {
 	pattern := fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Compute/virtualMachines/%s", mc.SubscriptionID, mc.ResourceGroup, mc.VirtualMachineName)

@@ -29,7 +29,7 @@ func (az *AzureClient) ListVirtualMachines(ctx context.Context, resourceGroup st
 func (az *AzureClient) GetVirtualMachine(ctx context.Context, resourceGroup, name string) (*armcompute.VirtualMachine, error) {
 	vm, err := az.virtualMachinesClient.Get(ctx, resourceGroup, name, nil)
 	if err != nil {
-		return &armcompute.VirtualMachine{}, errors.Wrapf(err, "getting virtual machine %s/%s", resourceGroup, name)
+		return nil, errors.Wrapf(err, "getting virtual machine %s/%s", resourceGroup, name)
 	}
 	return &vm.VirtualMachine, nil
 }
@@ -70,13 +70,4 @@ func (az *AzureClient) DeleteVirtualMachine(ctx context.Context, resourceGroup, 
 		return errors.Wrapf(err, "deleting virtual machine %s/%s", resourceGroup, name)
 	}
 	return err
-}
-
-// GetAvailabilitySet retrieves the specified VM availability set.
-func (az *AzureClient) GetAvailabilitySet(ctx context.Context, resourceGroup, availabilitySetName string) (armcompute.AvailabilitySet, error) {
-	as, err := az.availabilitySetsClient.Get(ctx, resourceGroup, availabilitySetName, nil)
-	if err != nil {
-		return armcompute.AvailabilitySet{}, errors.Wrapf(err, "getting availability set %s/%s", resourceGroup, availabilitySetName)
-	}
-	return as.AvailabilitySet, nil
 }

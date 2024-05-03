@@ -498,11 +498,6 @@ func (mc *MockAKSEngineClient) DeleteVirtualMachine(ctx context.Context, resourc
 	return nil
 }
 
-// GetAvailabilitySet mock
-func (mc *MockAKSEngineClient) GetAvailabilitySet(ctx context.Context, resourceGroup, availabilitySetName string) (armcompute.AvailabilitySet, error) {
-	return armcompute.AvailabilitySet{}, nil
-}
-
 // GetStorageClient mock
 
 func (mc *MockAKSEngineClient) DeleteVirtualHardDisk(ctx context.Context, resourceGroup string, vhd *armcompute.VirtualHardDisk) error {
