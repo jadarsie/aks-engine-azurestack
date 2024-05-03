@@ -98,7 +98,7 @@ func TestCreateNetworkSecurityGroup(t *testing.T) {
 
 	actual = CreateNetworkSecurityGroup(cs)
 
-	rules := *expected.SecurityRules
+	rules := *expected.SecurityGroup.SecurityRules
 
 	rdpRule := network.SecurityRule{
 		Name: to.StringPtr("allow_rdp"),
@@ -162,7 +162,7 @@ func TestCreateNetworkSecurityGroup(t *testing.T) {
 
 	rules = append(rules, rdpRule, vnetRule, blockOutBoundRule, allowARMRule)
 
-	expected.SecurityRules = &rules
+	expected.SecurityGroup.SecurityRules = &rules
 
 	diff = cmp.Diff(actual, expected)
 

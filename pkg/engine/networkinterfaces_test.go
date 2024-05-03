@@ -149,7 +149,7 @@ func TestCreateNIC(t *testing.T) {
 		"[variables('masterLbName')]",
 	}
 
-	expected.NetworkSecurityGroup = &network.SecurityGroup{
+	expected.Interface.NetworkSecurityGroup = &network.SecurityGroup{
 		ID: to.StringPtr("[variables('nsgID')]"),
 	}
 
@@ -173,7 +173,7 @@ func TestCreateNIC(t *testing.T) {
 		"[variables('masterLbName')]",
 	}
 
-	expected.IPConfigurations = &[]network.InterfaceIPConfiguration{
+	expected.Interface.IPConfigurations = &[]network.InterfaceIPConfiguration{
 		{
 			Name: to.StringPtr("ipconfig1"),
 			InterfaceIPConfigurationPropertiesFormat: &network.InterfaceIPConfigurationPropertiesFormat{
@@ -415,7 +415,7 @@ func TestCreatePrivateClusterNetworkInterface(t *testing.T) {
 		ID: to.StringPtr("[variables('nsgID')]"),
 	}
 
-	expected.IPConfigurations = &[]network.InterfaceIPConfiguration{
+	expected.Interface.IPConfigurations = &[]network.InterfaceIPConfiguration{
 		{
 			Name: to.StringPtr("ipconfig1"),
 			InterfaceIPConfigurationPropertiesFormat: &network.InterfaceIPConfigurationPropertiesFormat{
@@ -490,8 +490,8 @@ func TestCreatePrivateClusterNetworkInterface(t *testing.T) {
 		},
 	}
 	actual = createPrivateClusterMasterVMNetworkInterface(cs)
-	expected.EnableIPForwarding = to.BoolPtr(true)
-	expected.IPConfigurations = &[]network.InterfaceIPConfiguration{
+	expected.Interface.EnableIPForwarding = to.BoolPtr(true)
+	expected.Interface.IPConfigurations = &[]network.InterfaceIPConfiguration{
 		{
 			Name: to.StringPtr("ipconfig1"),
 			InterfaceIPConfigurationPropertiesFormat: &network.InterfaceIPConfigurationPropertiesFormat{
@@ -767,7 +767,7 @@ func TestCreateAgentVMASNIC(t *testing.T) {
 		"[variables('nsgID')]",
 	}
 
-	expected.NetworkSecurityGroup = &network.SecurityGroup{
+	expected.Interface.NetworkSecurityGroup = &network.SecurityGroup{
 		ID: to.StringPtr("[variables('nsgID')]"),
 	}
 
@@ -782,7 +782,7 @@ func TestCreateAgentVMASNIC(t *testing.T) {
 
 	actual = createAgentVMASNetworkInterface(cs, profile)
 
-	expected.IPConfigurations = &[]network.InterfaceIPConfiguration{
+	expected.Interface.IPConfigurations = &[]network.InterfaceIPConfiguration{
 		{
 			Name: to.StringPtr("ipconfig1"),
 			InterfaceIPConfigurationPropertiesFormat: &network.InterfaceIPConfigurationPropertiesFormat{
@@ -953,7 +953,7 @@ func TestCreateNICWithIPv6DualStackFeature(t *testing.T) {
 			Type: to.StringPtr("Microsoft.Network/networkInterfaces"),
 		},
 	}
-	expected.EnableIPForwarding = to.BoolPtr(true)
+	expected.Interface.EnableIPForwarding = to.BoolPtr(true)
 	diff := cmp.Diff(nic, expected)
 
 	if diff != "" {
@@ -1028,7 +1028,7 @@ func TestCreateAgentVMASNICWithIPv6DualStackFeature(t *testing.T) {
 			},
 		},
 	}
-	expected.IPConfigurations = &[]network.InterfaceIPConfiguration{
+	expected.Interface.IPConfigurations = &[]network.InterfaceIPConfiguration{
 		{
 			Name: to.StringPtr("ipconfig1"),
 			InterfaceIPConfigurationPropertiesFormat: &network.InterfaceIPConfigurationPropertiesFormat{
@@ -1058,7 +1058,7 @@ func TestCreateAgentVMASNICWithIPv6DualStackFeature(t *testing.T) {
 			},
 		},
 	}
-	expected.EnableIPForwarding = to.BoolPtr(true)
+	expected.Interface.EnableIPForwarding = to.BoolPtr(true)
 
 	diff := cmp.Diff(actual, expected)
 	if diff != "" {

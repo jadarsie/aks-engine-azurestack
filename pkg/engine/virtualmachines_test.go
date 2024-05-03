@@ -113,7 +113,7 @@ func TestCreateVirtualMachines(t *testing.T) {
 	// Validate cosmosetcd
 	cs.Properties.MasterProfile.CosmosEtcd = to.BoolPtr(true)
 	actualVM = CreateMasterVM(cs)
-	expectedVM.StorageProfile.DataDisks = nil
+	expectedVM.VirtualMachine.StorageProfile.DataDisks = nil
 	expectedCustomDataStr = getCustomDataFromJSON(tg.GetMasterCustomDataJSONObject(cs))
 	expectedVM.VirtualMachine.VirtualMachineProperties.OsProfile.CustomData = to.StringPtr(expectedCustomDataStr)
 
@@ -138,7 +138,7 @@ func TestCreateVirtualMachines(t *testing.T) {
 		"[variables('masterStorageAccountName')]",
 	}
 
-	expectedVM.StorageProfile.OsDisk = &compute.OSDisk{
+	expectedVM.VirtualMachine.StorageProfile.OsDisk = &compute.OSDisk{
 		Name: to.StringPtr("[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-osdisk')]"),
 		Vhd: &compute.VirtualHardDisk{
 			URI: to.StringPtr("[concat(reference(concat('Microsoft.Storage/storageAccounts/',variables('masterStorageAccountName')),variables('apiVersionStorage')).primaryEndpoints.blob,'vhds/',variables('masterVMNamePrefix'),copyIndex(variables('masterOffset')),'-osdisk.vhd')]"),
@@ -147,7 +147,7 @@ func TestCreateVirtualMachines(t *testing.T) {
 		CreateOption: compute.DiskCreateOptionTypesFromImage,
 	}
 
-	expectedVM.StorageProfile.DataDisks = &[]compute.DataDisk{
+	expectedVM.VirtualMachine.StorageProfile.DataDisks = &[]compute.DataDisk{
 		{
 			Lun:  to.Int32Ptr(0),
 			Name: to.StringPtr("[concat(variables('masterVMNamePrefix'), copyIndex(variables('masterOffset')),'-etcddisk')]"),
@@ -158,7 +158,7 @@ func TestCreateVirtualMachines(t *testing.T) {
 			DiskSizeGB:   to.Int32Ptr(256),
 		},
 	}
-	expectedVM.AvailabilitySet = nil
+	expectedVM.VirtualMachine.AvailabilitySet = nil
 	expectedVM.VirtualMachine.Identity = &compute.VirtualMachineIdentity{
 		Type: compute.ResourceIdentityType("UserAssigned"), UserAssignedIdentities: map[string]*compute.VirtualMachineIdentityUserAssignedIdentitiesValue{
 			"[variables('userAssignedIDReference')]": {},

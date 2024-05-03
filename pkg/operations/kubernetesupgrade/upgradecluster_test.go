@@ -17,7 +17,7 @@ import (
 	"github.com/Azure/aks-engine-azurestack/pkg/armhelpers"
 	"github.com/Azure/aks-engine-azurestack/pkg/i18n"
 	mock "github.com/Azure/aks-engine-azurestack/pkg/kubernetes/mock_kubernetes"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute"
+	compute "github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/compute/armcompute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
@@ -265,8 +265,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", Serial, func() {
 			uc.UpgradeWorkFlow = fakeUpgradeWorkflow{}
 		})
 		It("Should skip VMs that are already on desired version", func() {
-			mockClient.FakeListVirtualMachineResult = func() []compute.VirtualMachine {
-				return []compute.VirtualMachine{
+			mockClient.FakeListVirtualMachineResult = func() []*compute.VirtualMachine {
+				return []*compute.VirtualMachine{
 					mockClient.MakeFakeVirtualMachine("k8s-agentpool1-12345678-0", "Kubernetes:1.9.10"),
 				}
 			}
@@ -283,8 +283,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", Serial, func() {
 				"1.9.7":        true,
 				desiredVersion: false,
 			}
-			mockClient.FakeListVirtualMachineResult = func() []compute.VirtualMachine {
-				return []compute.VirtualMachine{
+			mockClient.FakeListVirtualMachineResult = func() []*compute.VirtualMachine {
+				return []*compute.VirtualMachine{
 					mockClient.MakeFakeVirtualMachine("k8s-agentpool1-12345678-0", "Kubernetes:1.9.7"),
 				}
 			}
@@ -301,8 +301,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", Serial, func() {
 				"1.9.7":        true,
 				desiredVersion: false,
 			}
-			mockClient.FakeListVirtualMachineResult = func() []compute.VirtualMachine {
-				return []compute.VirtualMachine{
+			mockClient.FakeListVirtualMachineResult = func() []*compute.VirtualMachine {
+				return []*compute.VirtualMachine{
 					mockClient.MakeFakeVirtualMachine("k8s-agentpool1-12345678-0", "Kubernetes:1.9.7"),
 				}
 			}
@@ -315,8 +315,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", Serial, func() {
 
 		})
 		It("Should not skip VMs that are already on desired version when Force true", func() {
-			mockClient.FakeListVirtualMachineResult = func() []compute.VirtualMachine {
-				return []compute.VirtualMachine{
+			mockClient.FakeListVirtualMachineResult = func() []*compute.VirtualMachine {
+				return []*compute.VirtualMachine{
 					mockClient.MakeFakeVirtualMachine("k8s-agentpool1-12345678-0", "Kubernetes:1.9.10"),
 				}
 			}
@@ -328,8 +328,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", Serial, func() {
 			Expect(*uc.AgentPools["agentpool1"].AgentVMs).To(HaveLen(1))
 		})
 		It("Should skip master VMS that are already on desired version", func() {
-			mockClient.FakeListVirtualMachineResult = func() []compute.VirtualMachine {
-				return []compute.VirtualMachine{
+			mockClient.FakeListVirtualMachineResult = func() []*compute.VirtualMachine {
+				return []*compute.VirtualMachine{
 					mockClient.MakeFakeVirtualMachine(fmt.Sprintf("%s-12345678-0", common.LegacyControlPlaneVMPrefix), "Kubernetes:1.9.10"),
 				}
 			}
@@ -342,8 +342,8 @@ var _ = Describe("Upgrade Kubernetes cluster tests", Serial, func() {
 
 		})
 		It("Should not skip master VMS that are already on desired version when Force is true", func() {
-			mockClient.FakeListVirtualMachineResult = func() []compute.VirtualMachine {
-				return []compute.VirtualMachine{
+			mockClient.FakeListVirtualMachineResult = func() []*compute.VirtualMachine {
+				return []*compute.VirtualMachine{
 					mockClient.MakeFakeVirtualMachine(fmt.Sprintf("%s-12345678-0", common.LegacyControlPlaneVMPrefix), "Kubernetes:1.9.10"),
 				}
 			}
@@ -718,11 +718,11 @@ func TestCheckControlPlaneNodesStatus(t *testing.T) {
 		}
 		return &v1.NodeList{Items: nodes}
 	}
-	upgradedVMs := func(names ...string) *[]compute.VirtualMachine {
-		vms := make([]compute.VirtualMachine, 0)
+	upgradedVMs := func(names ...string) *[]*compute.VirtualMachine {
+		vms := make([]*compute.VirtualMachine, 0)
 		for _, name := range names {
 			n := name
-			vm := compute.VirtualMachine{}
+			vm := &compute.VirtualMachine{}
 			vm.Name = &n
 			vms = append(vms, vm)
 		}

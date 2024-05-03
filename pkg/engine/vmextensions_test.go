@@ -151,7 +151,7 @@ func TestCreateAgentVMASCustomScriptExtension(t *testing.T) {
 	}
 	cse = createAgentVMASCustomScriptExtension(cs, profile)
 
-	expectedCSE.ProtectedSettings = &map[string]interface{}{
+	expectedCSE.VirtualMachineExtension.ProtectedSettings = &map[string]interface{}{
 		"commandToExecute": `[concat('echo $(date),$(hostname); for i in $(seq 1 1200); do grep -Fq "EOF" /opt/azure/containers/provision.sh && break; if [ $i -eq 1200 ]; then exit 100; else sleep 1; fi; done; ', variables('provisionScriptParametersCommon'),` + generateUserAssignedIdentityClientIDParameter(userAssignedIDEnabled) + `,' IS_VHD=false GPU_NODE=false SGX_NODE=false AUDITD_ENABLED=false /usr/bin/nohup /bin/bash -c "/bin/bash /opt/azure/containers/provision.sh >> ` + linuxCSELogPath + ` 2>&1 &"')]`,
 	}
 
@@ -170,10 +170,10 @@ func TestCreateAgentVMASCustomScriptExtension(t *testing.T) {
 
 	cse = createAgentVMASCustomScriptExtension(cs, profile)
 
-	expectedCSE.Publisher = to.StringPtr("Microsoft.Compute")
-	expectedCSE.VirtualMachineExtensionProperties.Type = to.StringPtr("CustomScriptExtension")
-	expectedCSE.TypeHandlerVersion = to.StringPtr("1.8")
-	expectedCSE.ProtectedSettings = &map[string]interface{}{
+	expectedCSE.VirtualMachineExtension.Publisher = to.StringPtr("Microsoft.Compute")
+	expectedCSE.VirtualMachineExtension.VirtualMachineExtensionProperties.Type = to.StringPtr("CustomScriptExtension")
+	expectedCSE.VirtualMachineExtension.TypeHandlerVersion = to.StringPtr("1.8")
+	expectedCSE.VirtualMachineExtension.ProtectedSettings = &map[string]interface{}{
 		"commandToExecute": "[concat('echo %DATE%,%TIME%,%COMPUTERNAME% && powershell.exe -ExecutionPolicy Unrestricted -command \"', '$arguments = ', variables('singleQuote'),'-MasterIP ',variables('kubernetesAPIServerIP'),' -KubeDnsServiceIp ',parameters('kubeDnsServiceIp')," + generateUserAssignedIdentityClientIDParameterForWindows(userAssignedIDEnabled) + "' -MasterFQDNPrefix ',variables('masterFqdnPrefix'),' -Location ',variables('location'),' -TargetEnvironment ',parameters('targetEnvironment'),' -AgentKey ',parameters('clientPrivateKey'),' -AADClientId ',variables('servicePrincipalClientId'),' -AADClientSecret ',variables('singleQuote'),variables('singleQuote'),base64(variables('servicePrincipalClientSecret')),variables('singleQuote'),variables('singleQuote'),' -NetworkAPIVersion ',variables('apiVersionNetwork'),' ',variables('singleQuote'), ' ; ', variables('windowsCustomScriptSuffix'), '\" > %SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.log 2>&1 ; exit $LASTEXITCODE')]",
 	}
 
@@ -199,10 +199,10 @@ func TestCreateAgentVMASCustomScriptExtension(t *testing.T) {
 
 	cse = createAgentVMASCustomScriptExtension(cs, profile)
 
-	expectedCSE.Publisher = to.StringPtr("Microsoft.Compute")
-	expectedCSE.VirtualMachineExtensionProperties.Type = to.StringPtr("CustomScriptExtension")
-	expectedCSE.TypeHandlerVersion = to.StringPtr("1.8")
-	expectedCSE.ProtectedSettings = &map[string]interface{}{
+	expectedCSE.VirtualMachineExtension.Publisher = to.StringPtr("Microsoft.Compute")
+	expectedCSE.VirtualMachineExtension.VirtualMachineExtensionProperties.Type = to.StringPtr("CustomScriptExtension")
+	expectedCSE.VirtualMachineExtension.TypeHandlerVersion = to.StringPtr("1.8")
+	expectedCSE.VirtualMachineExtension.ProtectedSettings = &map[string]interface{}{
 		"commandToExecute": "[concat('echo %DATE%,%TIME%,%COMPUTERNAME% && powershell.exe -ExecutionPolicy Unrestricted -command \"', '$arguments = ', variables('singleQuote'),'-MasterIP ',variables('kubernetesAPIServerIP'),' -KubeDnsServiceIp ',parameters('kubeDnsServiceIp')," + generateUserAssignedIdentityClientIDParameterForWindows(userAssignedIDEnabled) + "' -MasterFQDNPrefix ',variables('masterFqdnPrefix'),' -Location ',variables('location'),' -TargetEnvironment ',parameters('targetEnvironment'),' -AgentKey ',parameters('clientPrivateKey'),' -AADClientId ',variables('servicePrincipalClientId'),' -AADClientSecret ',variables('singleQuote'),variables('singleQuote'),base64(variables('servicePrincipalClientSecret')),variables('singleQuote'),variables('singleQuote'),' -NetworkAPIVersion ',variables('apiVersionNetwork'),' ',variables('singleQuote'), ' ; ', variables('windowsCustomScriptSuffix'), '\" > %SYSTEMDRIVE%\\AzureData\\CustomDataSetupScript.log 2>&1 ; exit $LASTEXITCODE')]",
 	}
 

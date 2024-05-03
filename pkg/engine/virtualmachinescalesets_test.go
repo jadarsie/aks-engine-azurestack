@@ -149,10 +149,10 @@ func TestCreateMasterVMSS(t *testing.T) {
 		"[variables('masterLbID')]",
 	}
 
-	expected.Sku.Capacity = to.Int64Ptr(3)
+	expected.VirtualMachineScaleSet.Sku.Capacity = to.Int64Ptr(3)
 
 	expectedCustomDataStr = getCustomDataFromJSON(tg.GetMasterCustomDataJSONObject(cs))
-	expected.VirtualMachineProfile.OsProfile.CustomData = to.StringPtr(expectedCustomDataStr)
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.OsProfile.CustomData = to.StringPtr(expectedCustomDataStr)
 
 	ipConfigs := *getIPConfigsMaster()
 
@@ -164,7 +164,7 @@ func TestCreateMasterVMSS(t *testing.T) {
 			ID: to.StringPtr("[concat(variables('masterInternalLbID'), '/backendAddressPools/', variables('masterLbBackendPoolName'))]"),
 		},
 	}
-	expected.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations = &[]compute.VirtualMachineScaleSetNetworkConfiguration{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations = &[]compute.VirtualMachineScaleSetNetworkConfiguration{
 		{
 			Name: to.StringPtr("[concat(variables('masterVMNamePrefix'), 'netintconfig')]"),
 			VirtualMachineScaleSetNetworkConfigurationProperties: &compute.VirtualMachineScaleSetNetworkConfigurationProperties{
@@ -197,14 +197,14 @@ func TestCreateMasterVMSS(t *testing.T) {
 
 	actual = CreateMasterVMSS(cs)
 
-	expected.Identity = &compute.VirtualMachineScaleSetIdentity{
+	expected.VirtualMachineScaleSet.Identity = &compute.VirtualMachineScaleSetIdentity{
 		Type: compute.ResourceIdentityType("UserAssigned"),
 		UserAssignedIdentities: map[string]*compute.VirtualMachineScaleSetIdentityUserAssignedIdentitiesValue{
 			"[variables('userAssignedIDReference')]": {},
 		},
 	}
 
-	expected.VirtualMachineProfile.ExtensionProfile = &compute.VirtualMachineScaleSetExtensionProfile{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.ExtensionProfile = &compute.VirtualMachineScaleSetExtensionProfile{
 		Extensions: &[]compute.VirtualMachineScaleSetExtension{
 			{
 				Name: to.StringPtr("[concat(variables('masterVMNamePrefix'), 'vmssCSE')]"),
@@ -435,7 +435,7 @@ func TestCreateAgentVMSS(t *testing.T) {
 		},
 	}
 
-	expected.VirtualMachineProfile.OsProfile = &compute.VirtualMachineScaleSetOSProfile{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.OsProfile = &compute.VirtualMachineScaleSetOSProfile{
 		AdminUsername:      to.StringPtr("[parameters('windowsAdminUsername')]"),
 		AdminPassword:      to.StringPtr("[parameters('windowsAdminPassword')]"),
 		CustomData:         to.StringPtr(expectedCustomDataStr),
@@ -445,7 +445,7 @@ func TestCreateAgentVMSS(t *testing.T) {
 		},
 	}
 
-	expected.VirtualMachineProfile.ExtensionProfile = &compute.VirtualMachineScaleSetExtensionProfile{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.ExtensionProfile = &compute.VirtualMachineScaleSetExtensionProfile{
 		Extensions: &[]compute.VirtualMachineScaleSetExtension{
 			{
 				Name: to.StringPtr("vmssCSE"),
@@ -463,14 +463,14 @@ func TestCreateAgentVMSS(t *testing.T) {
 		},
 	}
 
-	expected.VirtualMachineProfile.StorageProfile.ImageReference = &compute.ImageReference{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.StorageProfile.ImageReference = &compute.ImageReference{
 		Offer:     to.StringPtr("[parameters('agentWindowsOffer')]"),
 		Publisher: to.StringPtr("[parameters('agentWindowsPublisher')]"),
 		Sku:       to.StringPtr("[parameters('agentWindowsSku')]"),
 		Version:   to.StringPtr("[parameters('agentWindowsVersion')]"),
 	}
 
-	expected.Tags["resourceNameSuffix"] = to.StringPtr("[variables('winResourceNamePrefix')]")
+	expected.VirtualMachineScaleSet.Tags["resourceNameSuffix"] = to.StringPtr("[variables('winResourceNamePrefix')]")
 
 	diff = cmp.Diff(actual, expected)
 
@@ -504,7 +504,7 @@ func TestCreateAgentVMSS(t *testing.T) {
 		},
 	}
 
-	expected.VirtualMachineProfile.OsProfile = &compute.VirtualMachineScaleSetOSProfile{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.OsProfile = &compute.VirtualMachineScaleSetOSProfile{
 		AdminUsername:      to.StringPtr("[parameters('windowsAdminUsername')]"),
 		AdminPassword:      to.StringPtr("[parameters('windowsAdminPassword')]"),
 		CustomData:         to.StringPtr(expectedCustomDataStr),
@@ -514,7 +514,7 @@ func TestCreateAgentVMSS(t *testing.T) {
 		},
 	}
 
-	expected.VirtualMachineProfile.ExtensionProfile = &compute.VirtualMachineScaleSetExtensionProfile{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.ExtensionProfile = &compute.VirtualMachineScaleSetExtensionProfile{
 		Extensions: &[]compute.VirtualMachineScaleSetExtension{
 			{
 				Name: to.StringPtr("vmssCSE"),
@@ -532,16 +532,16 @@ func TestCreateAgentVMSS(t *testing.T) {
 		},
 	}
 
-	expected.VirtualMachineProfile.StorageProfile.ImageReference = &compute.ImageReference{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.StorageProfile.ImageReference = &compute.ImageReference{
 		Offer:     to.StringPtr("[parameters('agentWindowsOffer')]"),
 		Publisher: to.StringPtr("[parameters('agentWindowsPublisher')]"),
 		Sku:       to.StringPtr("[parameters('agentWindowsSku')]"),
 		Version:   to.StringPtr("[parameters('agentWindowsVersion')]"),
 	}
 
-	expected.Tags["resourceNameSuffix"] = to.StringPtr("[variables('winResourceNamePrefix')]")
+	expected.VirtualMachineScaleSet.Tags["resourceNameSuffix"] = to.StringPtr("[variables('winResourceNamePrefix')]")
 
-	expected.Identity = &compute.VirtualMachineScaleSetIdentity{
+	expected.VirtualMachineScaleSet.Identity = &compute.VirtualMachineScaleSetIdentity{
 		Type: compute.ResourceIdentityType("UserAssigned"),
 		UserAssignedIdentities: map[string]*compute.VirtualMachineScaleSetIdentityUserAssignedIdentitiesValue{
 			"[variables('userAssignedIDReference')]": {},
@@ -562,7 +562,7 @@ func TestCreateAgentVMSS(t *testing.T) {
 
 	actual = CreateAgentVMSS(cs, cs.Properties.AgentPoolProfiles[0])
 
-	expected.VirtualMachineProfile.NetworkProfile = &compute.VirtualMachineScaleSetNetworkProfile{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.NetworkProfile = &compute.VirtualMachineScaleSetNetworkProfile{
 		NetworkInterfaceConfigurations: &[]compute.VirtualMachineScaleSetNetworkConfiguration{
 			{
 				Name: to.StringPtr("[variables('agentpool1VMNamePrefix')]"),
@@ -576,7 +576,7 @@ func TestCreateAgentVMSS(t *testing.T) {
 		},
 	}
 
-	diff = cmp.Diff(actual.VirtualMachineProfile.NetworkProfile, expected.VirtualMachineProfile.NetworkProfile)
+	diff = cmp.Diff(actual.VirtualMachineScaleSet.VirtualMachineProfile.NetworkProfile, expected.VirtualMachineScaleSet.VirtualMachineProfile.NetworkProfile)
 
 	if diff != "" {
 		t.Errorf("unexpected diff while expecting equal structs: %s", diff)
@@ -585,7 +585,7 @@ func TestCreateAgentVMSS(t *testing.T) {
 	cs.Properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku = api.StandardLoadBalancerSku
 	actual = CreateAgentVMSS(cs, cs.Properties.AgentPoolProfiles[0])
 
-	expected.VirtualMachineProfile.NetworkProfile = &compute.VirtualMachineScaleSetNetworkProfile{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.NetworkProfile = &compute.VirtualMachineScaleSetNetworkProfile{
 		NetworkInterfaceConfigurations: &[]compute.VirtualMachineScaleSetNetworkConfiguration{
 			{
 				Name: to.StringPtr("[variables('agentpool1VMNamePrefix')]"),
@@ -599,7 +599,7 @@ func TestCreateAgentVMSS(t *testing.T) {
 		},
 	}
 
-	diff = cmp.Diff(actual.VirtualMachineProfile.NetworkProfile, expected.VirtualMachineProfile.NetworkProfile)
+	diff = cmp.Diff(actual.VirtualMachineScaleSet.VirtualMachineProfile.NetworkProfile, expected.VirtualMachineScaleSet.VirtualMachineProfile.NetworkProfile)
 
 	if diff != "" {
 		t.Errorf("unexpected diff while expecting equal structs: %s", diff)
@@ -611,24 +611,24 @@ func TestCreateAgentVMSS(t *testing.T) {
 	actual = CreateAgentVMSS(cs, cs.Properties.AgentPoolProfiles[0])
 
 	//   Test VirtualMachineProfile.BillingProfile
-	expected.VirtualMachineProfile.BillingProfile = &compute.BillingProfile{
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.BillingProfile = &compute.BillingProfile{
 		MaxPrice: to.Float64Ptr(float64(22)),
 	}
-	diff = cmp.Diff(actual.VirtualMachineProfile.BillingProfile, expected.VirtualMachineProfile.BillingProfile)
+	diff = cmp.Diff(actual.VirtualMachineScaleSet.VirtualMachineProfile.BillingProfile, expected.VirtualMachineScaleSet.VirtualMachineProfile.BillingProfile)
 	if diff != "" {
 		t.Errorf("unexpected diff while expecting equal structs: %s", diff)
 	}
 
 	//    Test VirtualMachineProfile.Priority
-	expected.VirtualMachineProfile.Priority = compute.VirtualMachinePriorityTypes(fmt.Sprintf("[variables('%sScaleSetPriority')]", cs.Properties.AgentPoolProfiles[0].Name))
-	diff = cmp.Diff(actual.VirtualMachineProfile.BillingProfile, expected.VirtualMachineProfile.BillingProfile)
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.Priority = compute.VirtualMachinePriorityTypes(fmt.Sprintf("[variables('%sScaleSetPriority')]", cs.Properties.AgentPoolProfiles[0].Name))
+	diff = cmp.Diff(actual.VirtualMachineScaleSet.VirtualMachineProfile.BillingProfile, expected.VirtualMachineScaleSet.VirtualMachineProfile.BillingProfile)
 	if diff != "" {
 		t.Errorf("unexpected diff while expecting equal structs: %s", diff)
 	}
 
 	//    Test VirtualMachineProfile.EvictionPolicy
-	expected.VirtualMachineProfile.EvictionPolicy = compute.VirtualMachineEvictionPolicyTypes(fmt.Sprintf("[variables('%sScaleSetEvictionPolicy')]", cs.Properties.AgentPoolProfiles[0].Name))
-	diff = cmp.Diff(actual.VirtualMachineProfile.BillingProfile, expected.VirtualMachineProfile.BillingProfile)
+	expected.VirtualMachineScaleSet.VirtualMachineProfile.EvictionPolicy = compute.VirtualMachineEvictionPolicyTypes(fmt.Sprintf("[variables('%sScaleSetEvictionPolicy')]", cs.Properties.AgentPoolProfiles[0].Name))
+	diff = cmp.Diff(actual.VirtualMachineScaleSet.VirtualMachineProfile.BillingProfile, expected.VirtualMachineScaleSet.VirtualMachineProfile.BillingProfile)
 	if diff != "" {
 		t.Errorf("unexpected diff while expecting equal structs: %s", diff)
 	}

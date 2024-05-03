@@ -6,104 +6,8 @@ package armhelpers
 import (
 	"context"
 	"testing"
-
-	azcompute "github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-03-30/compute"
-	"github.com/google/go-cmp/cmp"
 )
 
-func TestListVirtualMachines(t *testing.T) {
-	mc, err := NewHTTPMockClient()
-	if err != nil {
-		t.Fatalf("failed to create HttpMockClient - %s", err)
-	}
-
-	mc.RegisterLogin()
-	mc.RegisterListVirtualMachines()
-
-	err = mc.Activate()
-	if err != nil {
-		t.Fatalf("failed to activate HttpMockClient - %s", err)
-	}
-	defer mc.DeactivateAndReset()
-
-	env := mc.GetEnvironment()
-	azureClient, err := NewAzureClientWithClientSecret(env, subscriptionID, "clientID", "secret")
-	if err != nil {
-		t.Fatalf("can not get client %s", err)
-	}
-
-	list := &VirtualMachineVMValues{}
-	err = unmarshalFromString(mc.ResponseListVirtualMachines, &list)
-	if err != nil {
-		t.Error(err)
-	}
-
-	listExpected := []azcompute.VirtualMachine{}
-	if err = DeepCopy(&listExpected, list.Value); err != nil {
-		t.Fatal(err)
-	}
-
-	for page, err := azureClient.ListVirtualMachines(context.Background(), resourceGroup); page.NotDone(); err = page.Next() {
-		if err != nil {
-			t.Fatal(err)
-		}
-		if diff := cmp.Diff(page.Values(), listExpected); diff != "" {
-			t.Errorf("Fail to compare, Virtual Machines %q", diff)
-		}
-	}
-}
-
-func TestGetVirtualMachine(t *testing.T) {
-	mc, err := NewHTTPMockClient()
-	if err != nil {
-		t.Fatalf("failed to create HttpMockClient - %s", err)
-	}
-
-	mc.RegisterLogin()
-	mc.RegisterVirtualMachineEndpoint()
-
-	err = mc.Activate()
-	if err != nil {
-		t.Fatalf("failed to activate HttpMockClient - %s", err)
-	}
-	defer mc.DeactivateAndReset()
-
-	env := mc.GetEnvironment()
-	azureClient, err := NewAzureClientWithClientSecret(env, subscriptionID, "clientID", "secret")
-	if err != nil {
-		t.Fatalf("can not get client %s", err)
-	}
-
-	vm := compute.VirtualMachine{}
-	err = unmarshalFromString(mc.ResponseGetVirtualMachine, &vm)
-	if err != nil {
-		t.Error(err)
-	}
-
-	vmExpected := azcompute.VirtualMachine{}
-	if err = DeepCopy(&vmExpected, vm); err != nil {
-		t.Error(err)
-	}
-	vmActual, err := azureClient.GetVirtualMachine(context.Background(), resourceGroup, virtualMachineName)
-	if err != nil {
-		t.Error(err)
-	}
-
-	if diff := cmp.Diff(vmActual.VirtualMachineProperties, vmExpected.VirtualMachineProperties); diff != "" {
-		t.Errorf("Fail to compare, Virtual Machine VirtualMachineProperties %q", diff)
-	}
-	if diff := cmp.Diff(vmActual.Name, vmExpected.Name); diff != "" {
-		t.Errorf("Fail to compare, Virtual Machine Name %q", diff)
-	}
-	if diff := cmp.Diff(vmActual.Tags, vmExpected.Tags); diff != "" {
-		t.Errorf("Fail to compare, Virtual Machine Tags %q", diff)
-	}
-	if diff := cmp.Diff(vmActual.Location, vmExpected.Location); diff != "" {
-		t.Errorf("Fail to compare, Virtual Machine Location %q", diff)
-	}
-
-}
 func TestDeleteVirtualMachine(t *testing.T) {
 	mc, err := NewHTTPMockClient()
 	if err != nil {
@@ -160,52 +64,19 @@ func TestGetAvailabilitySet(t *testing.T) {
 	}
 
 	var expected int32 = 3
-	if *vmas.PlatformFaultDomainCount != expected {
-		t.Fatalf("expected PlatformFaultDomainCount of %d but got %v", expected, *vmas.PlatformFaultDomainCount)
+	if *vmas.Properties.PlatformFaultDomainCount != expected {
+		t.Fatalf("expected PlatformFaultDomainCount of %d but got %v", expected, *vmas.Properties.PlatformFaultDomainCount)
 	}
-	if *vmas.PlatformUpdateDomainCount != expected {
-		t.Fatalf("expected PlatformUpdateDomainCount of %d but got %v", expected, *vmas.PlatformUpdateDomainCount)
+	if *vmas.Properties.PlatformUpdateDomainCount != expected {
+		t.Fatalf("expected PlatformUpdateDomainCount of %d but got %v", expected, *vmas.Properties.PlatformUpdateDomainCount)
 	}
 
-	if vmas.ProximityPlacementGroup != nil && vmas.ProximityPlacementGroup.ID != nil {
-		t.Fatalf("expected ProximityPlacementGroup of %q but got %v", "", *vmas.ProximityPlacementGroup.ID)
+	if vmas.Properties.ProximityPlacementGroup != nil && vmas.Properties.ProximityPlacementGroup.ID != nil {
+		t.Fatalf("expected ProximityPlacementGroup of %q but got %v", "", *vmas.Properties.ProximityPlacementGroup.ID)
 	}
 
 	l := "eastus"
 	if *vmas.Location != l {
 		t.Fatalf("expected Location of %s but got %v", l, *vmas.Location)
-	}
-}
-
-func TestGetAvailabilitySetFaultDomainCount(t *testing.T) {
-	mc, err := NewHTTPMockClient()
-	if err != nil {
-		t.Fatalf("failed to create HttpMockClient - %s", err)
-	}
-
-	mc.RegisterLogin()
-	mc.RegisterGetAvailabilitySetFaultDomainCount()
-
-	err = mc.Activate()
-	if err != nil {
-		t.Fatalf("failed to activate HttpMockClient - %s", err)
-	}
-	defer mc.DeactivateAndReset()
-
-	env := mc.GetEnvironment()
-
-	azureClient, err := NewAzureClientWithClientSecret(env, subscriptionID, "clientID", "secret")
-	if err != nil {
-		t.Fatalf("can not get client %s", err)
-	}
-
-	count, err := azureClient.GetAvailabilitySetFaultDomainCount(context.Background(), resourceGroup, []string{"id1", "id2"})
-	if err != nil {
-		t.Fatalf("can't get availability set platform fault domain count: %s", err)
-	}
-
-	expected := 3
-	if count != expected {
-		t.Fatalf("platform fault domain count: expected %d but got %d", expected, count)
 	}
 }

@@ -252,7 +252,6 @@ func (authArgs *authArgs) getAzureClient() (armhelpers.AKSEngineClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	client.AddAcceptLanguages([]string{authArgs.language})
 	return client, nil
 }
 

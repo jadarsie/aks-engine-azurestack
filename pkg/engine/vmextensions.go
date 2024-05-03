@@ -144,7 +144,7 @@ func CreateCustomExtensions(properties *api.Properties) []DeploymentARM {
 					fmt.Println(e.Error())
 				}
 				ext.DependsOn = []string{nextDependsOn}
-				nextDependsOn = *ext.Name
+				nextDependsOn = *ext.DeploymentExtended.Name
 				extensionsARM = append(extensionsARM, ext)
 			}
 		}
@@ -168,7 +168,7 @@ func CreateCustomExtensions(properties *api.Properties) []DeploymentARM {
 					fmt.Println(e.Error())
 				}
 				ext.DependsOn = []string{nextDependsOn}
-				nextDependsOn = *ext.Name
+				nextDependsOn = *ext.DeploymentExtended.Name
 				extensionsARM = append(extensionsARM, ext)
 			}
 		}

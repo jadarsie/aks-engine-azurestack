@@ -529,7 +529,7 @@ func TestCreateMasterInternalLoadBalancer(t *testing.T) {
 
 	actual = CreateMasterInternalLoadBalancer(cs)
 
-	expected.LoadBalancerPropertiesFormat.LoadBalancingRules = &[]network.LoadBalancingRule{
+	expected.LoadBalancer.LoadBalancingRules = &[]network.LoadBalancingRule{
 		{
 			Name: to.StringPtr("InternalLBRuleHTTPS"),
 			LoadBalancingRulePropertiesFormat: &network.LoadBalancingRulePropertiesFormat{
@@ -619,7 +619,7 @@ func TestCreateMasterInternalLoadBalancer(t *testing.T) {
 
 	actual = CreateMasterInternalLoadBalancer(cs)
 
-	expected.FrontendIPConfigurations = &[]network.FrontendIPConfiguration{
+	expected.LoadBalancer.FrontendIPConfigurations = &[]network.FrontendIPConfiguration{
 		{
 			Name: to.StringPtr("[variables('masterInternalLbIPConfigName')]"),
 			FrontendIPConfigurationPropertiesFormat: &network.FrontendIPConfigurationPropertiesFormat{

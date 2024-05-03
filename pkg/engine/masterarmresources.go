@@ -137,7 +137,7 @@ func createKubernetesMasterResourcesVMAS(cs *api.ContainerService) []interface{}
 
 			for _, assignmentForAgentPool := range masterRoleAssignmentForAgentPools {
 				masterResources = append(masterResources, assignmentForAgentPool)
-				masterCSE.ARMResource.DependsOn = append(masterCSE.ARMResource.DependsOn, *assignmentForAgentPool.Name)
+				masterCSE.ARMResource.DependsOn = append(masterCSE.ARMResource.DependsOn, *assignmentForAgentPool.DeploymentExtended.Name)
 			}
 		}
 	}

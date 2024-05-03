@@ -8,115 +8,49 @@ import (
 	"time"
 
 	"github.com/Azure/aks-engine-azurestack/pkg/kubernetes"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/authorization/mgmt/authorization"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/compute"
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/resources"
-
-	azStorage "github.com/Azure/azure-sdk-for-go/storage"
+	"github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/authorization/armauthorization"
+	"github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/resources/armresources"
 )
-
-// VirtualMachineListResultPage is an interface for compute.VirtualMachineListResultPage to aid in mocking
-type VirtualMachineListResultPage interface {
-	Next() error
-	NotDone() bool
-	Response() compute.VirtualMachineListResult
-	Values() []compute.VirtualMachine
-}
-
-// ProviderListResultPage is an interface for resources.ProviderListResultPage to aid in mocking
-type ProviderListResultPage interface {
-	Next() error
-	NextWithContext(ctx context.Context) (err error)
-	NotDone() bool
-	Response() resources.ProviderListResult
-	Values() []resources.Provider
-}
-
-// DeploymentOperationsListResultPage is an interface for resources.DeploymentOperationsListResultPage to aid in mocking
-type DeploymentOperationsListResultPage interface {
-	Next() error
-	NotDone() bool
-	Response() resources.DeploymentOperationsListResult
-	Values() []resources.DeploymentOperation
-}
-
-// RoleAssignmentListResultPage is an interface for authorization.RoleAssignmentListResultPage to aid in mocking
-type RoleAssignmentListResultPage interface {
-	Next() error
-	NotDone() bool
-	Response() authorization.RoleAssignmentListResult
-	Values() []authorization.RoleAssignment
-}
-
-// DiskListPage is an interface for compute.DiskListPage to aid in mocking
-type DiskListPage interface {
-	Next() error
-	NextWithContext(ctx context.Context) (err error)
-	NotDone() bool
-	Response() compute.DiskList
-	Values() []compute.Disk
-}
 
 // VMImageFetcher is an extension of AKSEngine client allows us to operate on the virtual machine images in the environment
 type VMImageFetcher interface {
-
 	// ListVirtualMachineImages return a list of images
-	ListVirtualMachineImages(ctx context.Context, location, publisherName, offer, skus string) (compute.ListVirtualMachineImageResource, error)
-
+	ListVirtualMachineImages(ctx context.Context, location, publisherName, offer, skus string) ([]*armcompute.VirtualMachineImageResource, error)
 	// GetVirtualMachineImage return a virtual machine image
-	GetVirtualMachineImage(ctx context.Context, location, publisherName, offer, skus, version string) (compute.VirtualMachineImage, error)
+	GetVirtualMachineImage(ctx context.Context, location, publisherName, offer, skus, version string) (*armcompute.VirtualMachineImage, error)
 }
 
 // AKSEngineClient is the interface used to talk to an Azure environment.
-// This interface exposes just the subset of Azure APIs and clients needed for
-// AKS Engine.
+// This interface exposes just the subset of Azure APIs and clients needed for AKS Engine.
 type AKSEngineClient interface {
 
 	//AddAcceptLanguages sets the list of languages to accept on this request
-	AddAcceptLanguages(languages []string)
-
-	// AddAuxiliaryTokens sets the list of aux tokens to accept on this request
-	AddAuxiliaryTokens(tokens []string)
+	// AddAcceptLanguages(languages []string)
 
 	// RESOURCES
-
 	// DeployTemplate can deploy a template into Azure ARM
-	DeployTemplate(ctx context.Context, resourceGroup, name string, template, parameters map[string]interface{}) (resources.DeploymentExtended, error)
-
+	DeployTemplate(ctx context.Context, resourceGroup, name string, template, parameters map[string]interface{}) (*armresources.DeploymentExtended, error)
 	// EnsureResourceGroup ensures the specified resource group exists in the specified location
-	EnsureResourceGroup(ctx context.Context, resourceGroup, location string, managedBy *string) (*resources.Group, error)
+	EnsureResourceGroup(ctx context.Context, resourceGroup, location string, managedBy *string) (*armresources.ResourceGroup, error)
 
-	//
 	// COMPUTE
-
 	// ListVirtualMachines lists VM resources
-	ListVirtualMachines(ctx context.Context, resourceGroup string) (VirtualMachineListResultPage, error)
-
+	ListVirtualMachines(ctx context.Context, resourceGroup string) ([]*armcompute.VirtualMachine, error)
 	// GetVirtualMachine retrieves the specified virtual machine.
-	GetVirtualMachine(ctx context.Context, resourceGroup, name string) (compute.VirtualMachine, error)
-
+	GetVirtualMachine(ctx context.Context, resourceGroup, name string) (*armcompute.VirtualMachine, error)
 	// RestartVirtualMachine restarts the specified virtual machine.
 	RestartVirtualMachine(ctx context.Context, resourceGroup, name string) error
-
 	// DeleteVirtualMachine deletes the specified virtual machine.
 	DeleteVirtualMachine(ctx context.Context, resourceGroup, name string) error
-
 	// GetAvailabilitySet retrieves the specified VM availability set.
-	GetAvailabilitySet(ctx context.Context, resourceGroup, availabilitySet string) (compute.AvailabilitySet, error)
-
-	// GetAvailabilitySetFaultDomainCount returns the first platform fault domain count it finds from the
-	// VM availability set IDs provided.
-	GetAvailabilitySetFaultDomainCount(ctx context.Context, resourceGroup string, vmasIDs []string) (int, error)
-
+	GetAvailabilitySet(ctx context.Context, resourceGroup, availabilitySet string) (armcompute.AvailabilitySet, error)
 	// GetVirtualMachinePowerState returns the virtual machine's PowerState status code
 	GetVirtualMachinePowerState(ctx context.Context, resourceGroup, name string) (string, error)
 
 	//
 	// STORAGE
-
-	// GetStorageClient uses SRP to retrieve keys, and then an authenticated client for talking to the specified storage
-	// account.
-	GetStorageClient(ctx context.Context, resourceGroup, accountName string) (AKSStorageClient, error)
+	DeleteVirtualHardDisk(ctx context.Context, resourceGroup string, vhd *armcompute.VirtualHardDisk) error
 
 	//
 	// NETWORK
@@ -124,42 +58,20 @@ type AKSEngineClient interface {
 	// DeleteNetworkInterface deletes the specified network interface.
 	DeleteNetworkInterface(ctx context.Context, resourceGroup, nicName string) error
 
-	//
 	// RBAC
-	DeleteRoleAssignmentByID(ctx context.Context, roleAssignmentNameID string) (authorization.RoleAssignment, error)
-	ListRoleAssignmentsForPrincipal(ctx context.Context, scope string, principalID string) (RoleAssignmentListResultPage, error)
+	DeleteRoleAssignmentByID(ctx context.Context, roleAssignmentNameID string) (*armauthorization.RoleAssignment, error)
+	ListRoleAssignmentsForPrincipal(ctx context.Context, scope string, principalID string) ([]*armauthorization.RoleAssignment, error)
 
 	// MANAGED DISKS
 	DeleteManagedDisk(ctx context.Context, resourceGroupName string, diskName string) error
-	ListManagedDisksByResourceGroup(ctx context.Context, resourceGroupName string) (result DiskListPage, err error)
+	ListManagedDisksByResourceGroup(ctx context.Context, resourceGroupName string) ([]*armcompute.Disk, error)
 
 	GetKubernetesClient(apiserverURL, kubeConfig string, interval, timeout time.Duration) (kubernetes.Client, error)
 
-	ListProviders(ctx context.Context) (ProviderListResultPage, error)
+	ListProviders(ctx context.Context) ([]*armresources.Provider, error)
 
 	// DEPLOYMENTS
 
 	// ListDeploymentOperations gets all deployments operations for a deployment.
-	ListDeploymentOperations(ctx context.Context, resourceGroupName string, deploymentName string, top *int32) (result DeploymentOperationsListResultPage, err error)
-
-	// Log Analytics
-
-	// EnsureDefaultLogAnalyticsWorkspace ensures the default log analytics exists corresponding to specified location in current subscription
-	EnsureDefaultLogAnalyticsWorkspace(ctx context.Context, resourceGroup, location string) (workspaceResourceID string, err error)
-
-	// GetLogAnalyticsWorkspaceInfo gets the details about the workspace
-	GetLogAnalyticsWorkspaceInfo(ctx context.Context, workspaceSubscriptionID, workspaceResourceGroup, workspaceName string) (workspaceID string, workspaceKey, workspaceLocation string, err error)
-
-	// AddContainerInsightsSolution adds container insights solution for the specified log analytics workspace
-	AddContainerInsightsSolution(ctx context.Context, workspaceSubscriptionID, workspaceResourceGroup, workspaceName, workspaceLocation string) (result bool, err error)
-}
-
-// AKSStorageClient interface models the azure storage client
-type AKSStorageClient interface {
-	// DeleteBlob deletes the specified blob in the specified container.
-	DeleteBlob(containerName, blobName string, options *azStorage.DeleteBlobOptions) error
-	// CreateContainer creates the CloudBlobContainer if it does not exist
-	CreateContainer(containerName string, options *azStorage.CreateContainerOptions) (bool, error)
-	// SaveBlockBlob initializes a block blob by taking the byte
-	SaveBlockBlob(containerName, blobName string, b []byte, options *azStorage.PutBlobOptions) error
+	ListDeploymentOperations(ctx context.Context, resourceGroupName string, deploymentName string) ([]*armresources.DeploymentOperation, error)
 }

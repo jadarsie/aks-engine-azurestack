@@ -84,7 +84,7 @@ func TestCreateVirtualNetwork(t *testing.T) {
 		"[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]",
 	}
 
-	expectedVnet.Subnets = &[]network.Subnet{
+	expectedVnet.VirtualNetwork.Subnets = &[]network.Subnet{
 		{
 			Name: to.StringPtr("[variables('subnetName')]"),
 			SubnetPropertiesFormat: &network.SubnetPropertiesFormat{
@@ -373,7 +373,7 @@ func TestCreateVirtualNetworkVMSS(t *testing.T) {
 		"[concat('Microsoft.Network/routeTables/', variables('routeTableName'))]",
 	}
 
-	expectedVnet.Subnets = &[]network.Subnet{
+	expectedVnet.VirtualNetwork.Subnets = &[]network.Subnet{
 		{
 			Name: to.StringPtr("subnetmaster"),
 			SubnetPropertiesFormat: &network.SubnetPropertiesFormat{

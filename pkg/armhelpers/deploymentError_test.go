@@ -9,7 +9,8 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
 
-	"github.com/Azure/azure-sdk-for-go/profiles/2020-09-01/resources/mgmt/resources"
+	resources "github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/resources/armresources"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -112,9 +113,9 @@ func TestDeployTemplateSync_Success(t *testing.T) {
 func TestDeploymentError_Error(t *testing.T) {
 	t.Parallel()
 
-	operationsLists := make([]resources.DeploymentOperationsListResult, 0)
-	operationsList := resources.DeploymentOperationsListResult{}
-	operations := make([]resources.DeploymentOperation, 0)
+	operationsLists := make([]*resources.DeploymentOperation, 0)
+	operationsList := &resources.DeploymentOperation{}
+	operations := make([]*resources.DeploymentOperation, 0)
 	id := "1234"
 	oID := "342"
 	provisioningState := "Failed"
@@ -125,13 +126,12 @@ func TestDeploymentError_Error(t *testing.T) {
 		ProvisioningState: &provisioningState,
 		StatusMessage:     &status,
 	}
-	operation1 := resources.DeploymentOperation{
+	operation1 := &resources.DeploymentOperation{
 		ID:          &id,
 		OperationID: &oID,
 		Properties:  &properties,
 	}
 	operations = append(operations, operation1)
-	operationsList.Value = &operations
 	operationsLists = append(operationsLists, operationsList)
 	deploymentErr := &DeploymentError{
 		DeploymentName:    "agentvm",
@@ -139,11 +139,11 @@ func TestDeploymentError_Error(t *testing.T) {
 		TopError:          errors.New("sample error"),
 		ProvisioningState: "Failed",
 		Response:          []byte("sample resp"),
-		StatusCode:        500,
+		StatusCode:        to.StringPtr("500"),
 		OperationsLists:   operationsLists,
 	}
 	errString := deploymentErr.Error()
-	expected := `DeploymentName[agentvm] ResourceGroup[rg1] TopError[sample error] StatusCode[500] Response[sample resp] ProvisioningState[Failed] Operations[{
+	expected := `DeploymentName[agentvm] ResourceGroup[rg1] TopError[sample error] Response[sample resp] ProvisioningState[Failed] Operations[{
   "message": "sample status message"
 }]`
 	if errString != expected {
