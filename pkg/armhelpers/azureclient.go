@@ -42,10 +42,8 @@ var (
 // AzureClient implements the `AKSEngineClient` interface.
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
-	acceptLanguages []string
-	auxiliaryTokens []string
-	environment     azure.Environment
-	subscriptionID  string
+	environment    azure.Environment
+	subscriptionID string
 
 	authorizationClient        *authorization.RoleAssignmentsClient
 	deploymentsClient          *resources.DeploymentsClient
@@ -166,7 +164,7 @@ func newAzureClientWithCertificate(env azure.Environment, subscriptionID, client
 func getOAuthConfig(env azure.Environment, subscriptionID string) (string, error) {
 	tenantID, err := GetTenantID(subscriptionID)
 	if err != nil {
-		return "", err
+		return env.Name, err
 	}
 	return tenantID, nil
 }

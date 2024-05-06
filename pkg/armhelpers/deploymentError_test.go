@@ -113,8 +113,6 @@ func TestDeployTemplateSync_Success(t *testing.T) {
 func TestDeploymentError_Error(t *testing.T) {
 	t.Parallel()
 
-	operationsLists := make([]*resources.DeploymentOperation, 0)
-	operationsList := &resources.DeploymentOperation{}
 	operations := make([]*resources.DeploymentOperation, 0)
 	id := "1234"
 	oID := "342"
@@ -132,7 +130,6 @@ func TestDeploymentError_Error(t *testing.T) {
 		Properties:  &properties,
 	}
 	operations = append(operations, operation1)
-	operationsLists = append(operationsLists, operationsList)
 	deploymentErr := &DeploymentError{
 		DeploymentName:    "agentvm",
 		ResourceGroup:     "rg1",
@@ -140,7 +137,7 @@ func TestDeploymentError_Error(t *testing.T) {
 		ProvisioningState: "Failed",
 		Response:          []byte("sample resp"),
 		StatusCode:        to.StringPtr("500"),
-		OperationsLists:   operationsLists,
+		OperationsLists:   operations,
 	}
 	errString := deploymentErr.Error()
 	expected := `DeploymentName[agentvm] ResourceGroup[rg1] TopError[sample error] Response[sample resp] ProvisioningState[Failed] Operations[{

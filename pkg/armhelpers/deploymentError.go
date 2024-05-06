@@ -70,7 +70,7 @@ func DeployTemplateSync(az AKSEngineClient, logger *logrus.Entry, resourceGroupN
 
 	// try to extract error from ARM Response
 	if deploymentExtended.Properties != nil {
-		logger.Infof("StatusCode: %d, Error: %s", deploymentExtended.Properties.Error.Code, deploymentExtended.Properties.Error.Details)
+		// logger.Infof("StatusCode: %d, Error: %s", deploymentExtended.Properties.Error.Code, deploymentExtended.Properties.Error.Details)
 		deploymentErr.Response, _ = deploymentExtended.MarshalJSON()
 		deploymentErr.StatusCode = deploymentExtended.Properties.Error.Code
 	} else {
