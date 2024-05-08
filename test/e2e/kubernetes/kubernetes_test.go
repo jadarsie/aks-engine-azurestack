@@ -26,6 +26,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
 
@@ -181,15 +182,11 @@ var _ = BeforeSuite(func() {
 	stabilityCommandTimeout = time.Duration(cfg.StabilityTimeoutSeconds) * time.Second
 
 	if !cfg.IsCustomCloudProfile() {
-		env, err = azure.EnvironmentFromName("AzurePublicCloud") // TODO get this programmatically
+		cred, err := armhelpers.NewClientSecretCredential(cfg.SubscriptionID, cfg.ClientID, cfg.ClientSecret, cloud.AzurePublic)
 		if err != nil {
 			Expect(err).NotTo(HaveOccurred())
 		}
-		cred, err := armhelpers.NewClientSecretCredential(env, cfg.SubscriptionID, cfg.ClientID, cfg.ClientSecret, nil)
-		if err != nil {
-			Expect(err).NotTo(HaveOccurred())
-		}
-		azureClient, err = armhelpers.NewAzureClient(env, cfg.SubscriptionID, cred, nil)
+		azureClient, err = armhelpers.NewAzureClient(cfg.SubscriptionID, cred, cloud.AzurePublic)
 		if err != nil {
 			Expect(err).NotTo(HaveOccurred())
 		}

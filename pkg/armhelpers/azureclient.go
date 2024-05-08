@@ -17,8 +17,8 @@ import (
 	storage "github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/storage/armstorage"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -32,9 +32,6 @@ var (
 // AzureClient implements the `AKSEngineClient` interface.
 // This client is backed by real Azure clients talking to an ARM endpoint.
 type AzureClient struct {
-	environment    azure.Environment
-	subscriptionID string
-
 	authorizationClient        *authorization.RoleAssignmentsClient
 	deploymentsClient          *resources.DeploymentsClient
 	deploymentOperationsClient *resources.DeploymentOperationsClient
@@ -55,21 +52,21 @@ func (az *AzureClient) GetKubernetesClient(apiserverURL, kubeConfig string, inte
 }
 
 // NewAzureClientWithClientSecret returns an AzureClient via client_id and client_secret
-func NewAzureClient(env azure.Environment, subscriptionID string, creds azcore.TokenCredential, options *arm.ClientOptions) (*AzureClient, error) {
+func NewAzureClient(subscriptionID string, credential azcore.TokenCredential, cloud cloud.Configuration) (*AzureClient, error) {
+	options := &arm.ClientOptions{ClientOptions: azcore.ClientOptions{Cloud: cloud}}
+
 	c := &AzureClient{}
-	c.environment = env
-	c.subscriptionID = subscriptionID
-	c.authorizationClient, _ = authorization.NewRoleAssignmentsClient(subscriptionID, creds, options)
-	c.deploymentsClient, _ = resources.NewDeploymentsClient(subscriptionID, creds, options)
-	c.deploymentOperationsClient, _ = resources.NewDeploymentOperationsClient(subscriptionID, creds, options)
-	c.storageAccountsClient, _ = storage.NewAccountsClient(subscriptionID, creds, options)
-	c.interfacesClient, _ = network.NewInterfacesClient(subscriptionID, creds, options)
-	c.groupsClient, _ = resources.NewResourceGroupsClient(subscriptionID, creds, options)
-	c.providersClient, _ = resources.NewProvidersClient(subscriptionID, creds, options)
-	c.virtualMachinesClient, _ = compute.NewVirtualMachinesClient(subscriptionID, creds, options)
-	c.disksClient, _ = compute.NewDisksClient(subscriptionID, creds, options)
-	c.availabilitySetsClient, _ = compute.NewAvailabilitySetsClient(subscriptionID, creds, options)
-	c.virtualMachineImagesClient, _ = compute.NewVirtualMachineImagesClient(subscriptionID, creds, options)
+	c.authorizationClient, _ = authorization.NewRoleAssignmentsClient(subscriptionID, credential, options)
+	c.deploymentsClient, _ = resources.NewDeploymentsClient(subscriptionID, credential, options)
+	c.deploymentOperationsClient, _ = resources.NewDeploymentOperationsClient(subscriptionID, credential, options)
+	c.storageAccountsClient, _ = storage.NewAccountsClient(subscriptionID, credential, options)
+	c.interfacesClient, _ = network.NewInterfacesClient(subscriptionID, credential, options)
+	c.groupsClient, _ = resources.NewResourceGroupsClient(subscriptionID, credential, options)
+	c.providersClient, _ = resources.NewProvidersClient(subscriptionID, credential, options)
+	c.virtualMachinesClient, _ = compute.NewVirtualMachinesClient(subscriptionID, credential, options)
+	c.disksClient, _ = compute.NewDisksClient(subscriptionID, credential, options)
+	c.availabilitySetsClient, _ = compute.NewAvailabilitySetsClient(subscriptionID, credential, options)
+	c.virtualMachineImagesClient, _ = compute.NewVirtualMachineImagesClient(subscriptionID, credential, options)
 	c.storageBlobClientFactory = keysBlobClient()
 	return c, nil
 }

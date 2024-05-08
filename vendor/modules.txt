@@ -23,6 +23,7 @@ github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/authorizatio
 github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/compute/armcompute
 github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/network/armnetwork
 github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/resources/armresources
+github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/resources/armsubscriptions
 github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/storage/armstorage
 # github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1
 ## explicit; go 1.18

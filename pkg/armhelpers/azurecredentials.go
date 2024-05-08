@@ -10,40 +10,49 @@ import (
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/fake"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/pkg/errors"
 )
 
 // NewClientSecretCredential returns an AzureClient via client_id and client_secret
-func NewClientSecretCredential(env azure.Environment, subscriptionID, clientID, clientSecret string, options *azidentity.ClientSecretCredentialOptions) (*azidentity.ClientSecretCredential, error) {
-	tenantID, err := getOAuthConfig(&fake.TokenCredential{}, env, subscriptionID)
+func NewClientSecretCredential(subscriptionID, clientID, clientSecret string, cloud cloud.Configuration) (*azidentity.ClientSecretCredential, error) {
+	tenantID, err := getOAuthConfig(&fake.TokenCredential{}, subscriptionID)
 	if err != nil {
 		return nil, err
 	}
-	creds, err := azidentity.NewClientSecretCredential(tenantID, clientID, clientSecret, options)
+	options := &azidentity.ClientSecretCredentialOptions{
+		DisableInstanceDiscovery: true,
+		ClientOptions: policy.ClientOptions{
+			Cloud: cloud,
+		},
+	}
+	cred, err := azidentity.NewClientSecretCredential(tenantID, clientID, clientSecret, options)
 	if err != nil {
 		return nil, err
 	}
-	return creds, nil
+	return cred, nil
 }
 
 // NewClientSecretCredentialExternalTenant returns an AzureClient via client_id and client_secret from a tenant
-func NewClientSecretCredentialExternalTenant(env azure.Environment, subscriptionID, clientID, clientSecret string, options *azidentity.ClientSecretCredentialOptions) (*azidentity.ClientSecretCredential, error) {
-	tenantID, err := getOAuthConfig(&fake.TokenCredential{}, env, subscriptionID)
+func NewClientSecretCredentialExternalTenant(subscriptionID, clientID, clientSecret string, cloud cloud.Configuration) (*azidentity.ClientSecretCredential, error) {
+	options := &azidentity.ClientSecretCredentialOptions{
+		DisableInstanceDiscovery: true,
+		ClientOptions: policy.ClientOptions{
+			Cloud: cloud,
+		},
+	}
+	cred, err := azidentity.NewClientSecretCredential("adfs", clientID, clientSecret, options)
 	if err != nil {
 		return nil, err
 	}
-	creds, err := azidentity.NewClientSecretCredential(tenantID, clientID, clientSecret, options)
-	if err != nil {
-		return nil, err
-	}
-	return creds, nil
+	return cred, nil
 }
 
 // NewClientCertificateCredential returns an AzureClient via client_id and jwt certificate assertion
-func NewClientCertificateCredential(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string, options *azidentity.ClientCertificateCredentialOptions) (*azidentity.ClientCertificateCredential, error) {
+func NewClientCertificateCredential(subscriptionID, clientID, certificatePath, privateKeyPath string, cloud cloud.Configuration) (*azidentity.ClientCertificateCredential, error) {
 	certificateData, err := os.ReadFile(certificatePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to read certificate")
@@ -60,15 +69,22 @@ func NewClientCertificateCredential(env azure.Environment, subscriptionID, clien
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to parse rsa private key")
 	}
-	tenantID, err := getOAuthConfig(&fake.TokenCredential{}, env, subscriptionID)
+	tenantID, err := getOAuthConfig(&fake.TokenCredential{}, subscriptionID)
 	if err != nil {
 		return nil, err
+	}
+	options := &azidentity.ClientCertificateCredentialOptions{
+		SendCertificateChain:     true,
+		DisableInstanceDiscovery: true,
+		ClientOptions: policy.ClientOptions{
+			Cloud: cloud,
+		},
 	}
 	return azidentity.NewClientCertificateCredential(tenantID, clientID, []*x509.Certificate{certificate}, privateKey, options)
 }
 
 // NewClientCertificateCredentialExternalTenant returns an AzureClient via client_id and jwt certificate assertion a 3rd party tenant
-func NewClientCertificateCredentialExternalTenant(env azure.Environment, subscriptionID, clientID, certificatePath, privateKeyPath string, options *azidentity.ClientCertificateCredentialOptions) (*azidentity.ClientCertificateCredential, error) {
+func NewClientCertificateCredentialExternalTenant(subscriptionID, clientID, certificatePath, privateKeyPath string, cloud cloud.Configuration) (*azidentity.ClientCertificateCredential, error) {
 	certificateData, err := os.ReadFile(certificatePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to read certificate")
@@ -85,17 +101,20 @@ func NewClientCertificateCredentialExternalTenant(env azure.Environment, subscri
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to parse rsa private key")
 	}
-	tenantID, err := getOAuthConfig(&fake.TokenCredential{}, env, subscriptionID)
-	if err != nil {
-		return nil, err
+	options := &azidentity.ClientCertificateCredentialOptions{
+		SendCertificateChain:     true,
+		DisableInstanceDiscovery: true,
+		ClientOptions: policy.ClientOptions{
+			Cloud: cloud,
+		},
 	}
-	return azidentity.NewClientCertificateCredential(tenantID, clientID, []*x509.Certificate{certificate}, privateKey, options)
+	return azidentity.NewClientCertificateCredential("adfs", clientID, []*x509.Certificate{certificate}, privateKey, options)
 }
 
-func getOAuthConfig(credential azcore.TokenCredential, env azure.Environment, subscriptionID string) (string, error) {
+func getOAuthConfig(credential azcore.TokenCredential, subscriptionID string) (string, error) {
 	tenantID, err := GetTenantID(credential, subscriptionID, nil)
 	if err != nil {
-		return env.Name, err
+		return "", err
 	}
 	return tenantID, nil
 }
