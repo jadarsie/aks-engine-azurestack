@@ -185,7 +185,11 @@ var _ = BeforeSuite(func() {
 		if err != nil {
 			Expect(err).NotTo(HaveOccurred())
 		}
-		azureClient, err = armhelpers.NewAzureClientWithClientSecret(env, cfg.SubscriptionID, cfg.ClientID, cfg.ClientSecret)
+		cred, err := armhelpers.NewClientSecretCredential(env, cfg.SubscriptionID, cfg.ClientID, cfg.ClientSecret, nil)
+		if err != nil {
+			Expect(err).NotTo(HaveOccurred())
+		}
+		azureClient, err = armhelpers.NewAzureClient(env, cfg.SubscriptionID, cred, nil)
 		if err != nil {
 			Expect(err).NotTo(HaveOccurred())
 		}

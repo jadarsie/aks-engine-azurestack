@@ -71,7 +71,7 @@ func createKubernetesMasterResourcesVMAS(cs *api.ContainerService) []interface{}
 	if !(cs.Properties.OrchestratorProfile.IsPrivateCluster() && !p.MasterProfile.HasMultipleNodes()) &&
 		// And we don't create a master load balancer in a private cluster + Basic LB scenario
 		!(cs.Properties.OrchestratorProfile.IsPrivateCluster() && cs.Properties.OrchestratorProfile.KubernetesConfig.LoadBalancerSku == api.BasicLoadBalancerSku) {
-		loadBalancer := CreateMasterLoadBalancer(cs.Properties, false)
+		loadBalancer := CreateMasterLoadBalancer(cs.Properties)
 		// In a private cluster scenario, the master NIC spec is different,
 		// and the master LB is for outbound access only and doesn't require a DNS record for the public IP
 		includeDNS := !cs.Properties.OrchestratorProfile.IsPrivateCluster()
@@ -177,7 +177,7 @@ func createKubernetesMasterResourcesVMSS(cs *api.ContainerService) []interface{}
 
 	includeDNS := !cs.Properties.OrchestratorProfile.IsPrivateCluster()
 	publicIPAddress := CreatePublicIPAddressForMaster(includeDNS)
-	loadBalancer := CreateMasterLoadBalancer(cs.Properties, true)
+	loadBalancer := CreateMasterLoadBalancer(cs.Properties)
 	masterResources = append(masterResources, publicIPAddress, loadBalancer)
 
 	kubernetesConfig := cs.Properties.OrchestratorProfile.KubernetesConfig
