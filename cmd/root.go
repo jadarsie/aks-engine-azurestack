@@ -19,6 +19,7 @@ import (
 	"github.com/Azure/aks-engine-azurestack/pkg/helpers"
 	"github.com/Azure/aks-engine-azurestack/pkg/i18n"
 	"github.com/Azure/aks-engine-azurestack/pkg/kubernetes"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -213,32 +214,36 @@ func getCloudSubFromAzConfig(cloud string, f *ini.File) (uuid.UUID, error) {
 }
 
 func (authArgs *authArgs) getClient() (armhelpers.AKSEngineClient, error) {
+
 	return authArgs.getAzureClient()
 }
 
 func (authArgs *authArgs) getAzureClient() (armhelpers.AKSEngineClient, error) {
-	var client *armhelpers.AzureClient
+	subID := authArgs.SubscriptionID.String()
+	clientID := authArgs.ClientID.String()
+
 	env, err := azure.EnvironmentFromName(authArgs.RawAzureEnvironment)
 	if err != nil {
 		return nil, err
 	}
+	var creds azcore.TokenCredential
 	switch authArgs.AuthMethod {
 	case "client_secret":
 		if authArgs.IdentitySystem == "azure_ad" {
-			client, err = armhelpers.NewAzureClientWithClientSecret(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.ClientSecret)
+			creds, err = armhelpers.NewClientSecretCredential(env, subID, clientID, authArgs.ClientSecret, nil)
 		} else if authArgs.IdentitySystem == "adfs" {
 			// for ADFS environment, it is single tenant environment and the tenant id is aways adfs
-			client, err = armhelpers.NewAzureClientWithClientSecretExternalTenant(env, authArgs.SubscriptionID.String(), "adfs", authArgs.ClientID.String(), authArgs.ClientSecret)
+			creds, err = armhelpers.NewClientSecretCredentialExternalTenant(env, subID, clientID, authArgs.ClientSecret, nil)
 		} else {
 			return nil, errors.Errorf("--auth-method: ERROR: method unsupported. method=%q identitysystem=%q", authArgs.AuthMethod, authArgs.IdentitySystem)
 		}
 	case "client_certificate":
 		if authArgs.IdentitySystem == "azure_ad" {
-			client, err = armhelpers.NewAzureClientWithClientCertificateFile(env, authArgs.SubscriptionID.String(), authArgs.ClientID.String(), authArgs.CertificatePath, authArgs.PrivateKeyPath)
+			creds, err = armhelpers.NewClientCertificateCredential(env, subID, clientID, authArgs.CertificatePath, authArgs.PrivateKeyPath, nil)
 			break
 		} else if authArgs.IdentitySystem == "adfs" {
 			// for ADFS environment, it is single tenant environment and the tenant id is aways adfs
-			client, err = armhelpers.NewAzureClientWithClientCertificateFileExternalTenant(env, authArgs.SubscriptionID.String(), "adfs", authArgs.ClientID.String(), authArgs.CertificatePath, authArgs.PrivateKeyPath)
+			creds, err = armhelpers.NewClientCertificateCredentialExternalTenant(env, subID, clientID, authArgs.CertificatePath, authArgs.PrivateKeyPath, nil)
 			break
 		}
 		fallthrough
@@ -248,7 +253,12 @@ func (authArgs *authArgs) getAzureClient() (armhelpers.AKSEngineClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = client.EnsureProvidersRegistered(authArgs.SubscriptionID.String())
+
+	client, err := armhelpers.NewAzureClient(env, subID, creds, nil)
+	if err != nil {
+		return nil, err
+	}
+	err = client.EnsureProvidersRegistered(subID)
 	if err != nil {
 		return nil, err
 	}

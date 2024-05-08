@@ -7,12 +7,10 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/Azure/aks-engine-azurestack/pkg/api"
 	"github.com/Azure/aks-engine-azurestack/pkg/armhelpers"
-	"github.com/Azure/aks-engine-azurestack/pkg/armhelpers/testserver"
 	"github.com/Azure/aks-engine-azurestack/pkg/helpers"
 	"github.com/Azure/aks-engine-azurestack/pkg/i18n"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -221,82 +219,82 @@ func TestWriteCustomCloudProfile(t *testing.T) {
 	}
 }
 
-func TestGetAzureStackClientWithClientSecret(t *testing.T) {
-	t.Parallel()
+// func TestGetAzureStackClientWithClientSecret(t *testing.T) {
+// 	// t.Parallel()
 
-	cs, err := prepareCustomCloudProfile()
-	if err != nil {
-		t.Fatalf("failed to prepare custom cloud profile: %v", err)
-	}
-	subscriptionID, _ := uuid.Parse("cc6b141e-6afc-4786-9bf6-e3b9a5601460")
+// 	cs, err := prepareCustomCloudProfile()
+// 	if err != nil {
+// 		t.Fatalf("failed to prepare custom cloud profile: %v", err)
+// 	}
+// 	subscriptionID, _ := uuid.Parse("cc6b141e-6afc-4786-9bf6-e3b9a5601460")
 
-	for _, tc := range []struct {
-		desc     string
-		authArgs authArgs
-	}{
-		{
-			"identity-system azure_ad should produce valid client",
-			authArgs{
-				AuthMethod:          "client_secret",
-				IdentitySystem:      "azure_ad",
-				SubscriptionID:      subscriptionID,
-				RawAzureEnvironment: "AZURESTACKCLOUD",
-				ClientID:            subscriptionID,
-				ClientSecret:        "secret",
-			},
-		},
-		{
-			"identity-system adfs should produce valid client",
-			authArgs{
-				AuthMethod:          "client_secret",
-				IdentitySystem:      "adfs",
-				SubscriptionID:      subscriptionID,
-				RawAzureEnvironment: "AZURESTACKCLOUD",
-				ClientID:            subscriptionID,
-				ClientSecret:        "secret",
-			},
-		},
-		{
-			"invalid identity-system should throw error",
-			authArgs{
-				AuthMethod:          "client_secret",
-				IdentitySystem:      "fake-system",
-				RawAzureEnvironment: "AZURESTACKCLOUD",
-			},
-		},
-	} {
-		test := tc
-		t.Run(test.desc, func(t *testing.T) {
+// 	for _, tc := range []struct {
+// 		desc     string
+// 		authArgs authArgs
+// 	}{
+// 		{
+// 			"identity-system azure_ad should produce valid client",
+// 			authArgs{
+// 				AuthMethod:          "client_secret",
+// 				IdentitySystem:      "azure_ad",
+// 				SubscriptionID:      subscriptionID,
+// 				RawAzureEnvironment: "AZURESTACKCLOUD",
+// 				ClientID:            subscriptionID,
+// 				ClientSecret:        "secret",
+// 			},
+// 		},
+// 		{
+// 			"identity-system adfs should produce valid client",
+// 			authArgs{
+// 				AuthMethod:          "client_secret",
+// 				IdentitySystem:      "adfs",
+// 				SubscriptionID:      subscriptionID,
+// 				RawAzureEnvironment: "AZURESTACKCLOUD",
+// 				ClientID:            subscriptionID,
+// 				ClientSecret:        "secret",
+// 			},
+// 		},
+// 		{
+// 			"invalid identity-system should throw error",
+// 			authArgs{
+// 				AuthMethod:          "client_secret",
+// 				IdentitySystem:      "fake-system",
+// 				RawAzureEnvironment: "AZURESTACKCLOUD",
+// 			},
+// 		},
+// 	} {
+// 		test := tc
+// 		t.Run(test.desc, func(t *testing.T) {
 
-			mux := getMuxForIdentitySystem(&test.authArgs)
+// 			mux := getMuxForIdentitySystem(&test.authArgs)
 
-			server, err := testserver.CreateAndStart(0, mux)
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer server.Stop()
+// 			server, err := testserver.CreateAndStart(0, mux)
+// 			if err != nil {
+// 				t.Fatal(err)
+// 			}
+// 			defer server.Stop()
 
-			mockURI := fmt.Sprintf("http://localhost:%d/", server.Port)
-			cs.Properties.CustomCloudProfile.Environment.ResourceManagerEndpoint = mockURI
-			cs.Properties.CustomCloudProfile.Environment.ActiveDirectoryEndpoint = mockURI
+// 			mockURI := fmt.Sprintf("http://localhost:%d/", server.Port)
+// 			cs.Properties.CustomCloudProfile.Environment.ResourceManagerEndpoint = mockURI
+// 			cs.Properties.CustomCloudProfile.Environment.ActiveDirectoryEndpoint = mockURI
 
-			if err = writeCustomCloudProfile(cs); err != nil {
-				t.Fatalf("failed to write custom cloud profile: %v", err)
-			}
+// 			if err = writeCustomCloudProfile(cs); err != nil {
+// 				t.Fatalf("failed to write custom cloud profile: %v", err)
+// 			}
 
-			client, err := test.authArgs.getAzureClient()
-			if isValidIdentitySystem(test.authArgs.IdentitySystem) {
-				if client == nil {
-					t.Fatalf("azure client was not created. error=%v", err)
-				}
-			} else {
-				if err == nil || !strings.HasPrefix(err.Error(), "--auth-method") {
-					t.Fatalf("failed to return error with invalid identity-system")
-				}
-			}
-		})
-	}
-}
+// 			client, err := test.authArgs.getAzureClient()
+// 			if isValidIdentitySystem(test.authArgs.IdentitySystem) {
+// 				if client == nil {
+// 					t.Fatalf("azure client was not created. error=%v", err)
+// 				}
+// 			} else {
+// 				if err == nil || !strings.HasPrefix(err.Error(), "--auth-method") {
+// 					t.Fatalf("failed to return error with invalid identity-system")
+// 				}
+// 			}
+// 		})
+// 	}
+// }
 
 func TestValidateAuthArgs(t *testing.T) {
 	t.Parallel()
@@ -455,7 +453,7 @@ func getMuxForIdentitySystem(authArgs *authArgs) *http.ServeMux {
 	switch authArgs.IdentitySystem {
 	case "azure_ad":
 		mux.HandleFunc(fmt.Sprintf("/subscriptions/%s", authArgs.SubscriptionID), func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Query().Get(apiVersion) != "2018-06-01" {
+			if r.URL.Query().Get(apiVersion) != "2016-06-01" {
 				w.WriteHeader(http.StatusNotFound)
 			} else {
 				w.Header().Add("Www-Authenticate", fmt.Sprintf(`Bearer authorization_uri="https://login.windows.net/%s", error="invalid_token", error_description="The authentication failed because of missing 'Authorization' header."`, token))

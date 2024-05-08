@@ -23,7 +23,6 @@ github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/authorizatio
 github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/compute/armcompute
 github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/network/armnetwork
 github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/resources/armresources
-github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/resources/armsubscriptions
 github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/storage/armstorage
 # github.com/Azure/azure-sdk-for-go/sdk/azcore v1.11.1
 ## explicit; go 1.18
@@ -33,6 +32,9 @@ github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/internal/resource
 github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/policy
 github.com/Azure/azure-sdk-for-go/sdk/azcore/arm/runtime
 github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud
+github.com/Azure/azure-sdk-for-go/sdk/azcore/fake
+github.com/Azure/azure-sdk-for-go/sdk/azcore/fake/internal/exported
+github.com/Azure/azure-sdk-for-go/sdk/azcore/fake/server
 github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/exported
 github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/log
 github.com/Azure/azure-sdk-for-go/sdk/azcore/internal/pollers
@@ -61,6 +63,10 @@ github.com/Azure/azure-sdk-for-go/sdk/internal/log
 github.com/Azure/azure-sdk-for-go/sdk/internal/poller
 github.com/Azure/azure-sdk-for-go/sdk/internal/temporal
 github.com/Azure/azure-sdk-for-go/sdk/internal/uuid
+# github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions v1.3.0
+## explicit; go 1.18
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions
+github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions/fake
 # github.com/Azure/azure-sdk-for-go/sdk/storage/azblob v1.3.2
 ## explicit; go 1.18
 github.com/Azure/azure-sdk-for-go/sdk/storage/azblob

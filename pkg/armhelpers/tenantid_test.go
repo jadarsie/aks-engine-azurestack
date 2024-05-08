@@ -4,58 +4,71 @@
 package armhelpers
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	azfake "github.com/Azure/azure-sdk-for-go/sdk/azcore/fake"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
+	azarm "github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions/fake"
 )
-
-var (
-	mux    *http.ServeMux
-	server *httptest.Server
-)
-
-func setup() func() {
-	mux = http.NewServeMux()
-	server = httptest.NewServer(mux)
-
-	return func() {
-		server.Close()
-	}
-}
 
 func TestGetTenantID(t *testing.T) {
+	fakeServer := fake.Server{
+		Get: func(ctx context.Context, subscriptionID string, options *azarm.ClientGetOptions) (resp azfake.Responder[azarm.ClientGetResponse], errResp azfake.ErrorResponder) {
+			errResp.SetError(&azcore.ResponseError{
+				StatusCode: http.StatusUnauthorized,
+				RawResponse: &http.Response{
+					StatusCode: http.StatusUnauthorized,
+				},
+			})
+			return
+		},
+	}
 
-	tearDown := setup()
-	defer tearDown()
-
-	expectedTenantID := "96fe9d1-6171-40aa-945b-4c64b63bf655"
-	mux.HandleFunc("/subscriptions/foobarsubscription", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("WWW-Authenticate", `authorization_uri="https://login.windows.net/`+expectedTenantID+`"`)
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write([]byte("Unauthorized"))
+	tenantID, err := GetTenantID(&azfake.TokenCredential{}, "foobarsubscription", &arm.ClientOptions{
+		ClientOptions: azcore.ClientOptions{
+			Transport: fake.NewServerTransport(&fakeServer),
+			PerCallPolicies: []policy.Policy{
+				runtime.NewBearerTokenPolicy(&azfake.TokenCredential{}, []string{"https://management.azure.com/"}, &policy.BearerTokenOptions{
+					AuthorizationHandler: policy.AuthorizationHandler{
+						OnRequest: func(req *policy.Request, _ func(policy.TokenRequestOptions) error) error {
+							req.Raw().Header.Set("Authorization", "Bearer fake_token")
+							return nil
+						},
+						// 			OnChallenge: func(_ *policy.Request, resp *http.Response, authNZ func(policy.TokenRequestOptions) error) error {
+						// 				resp.Header.Add("WWW-Authenticate", `authorization_uri="https://login.windows.net/faketenantid"`)
+						// 				return runtime.NewResponseError(resp)
+						// 			},
+					},
+				}),
+			},
+		},
 	})
-
-	tenantID, err := GetTenantID("foobarsubscription")
 
 	if err != nil {
 		t.Error("Did not expect error")
 	}
-
-	if tenantID != expectedTenantID {
-		t.Errorf("expected tenant Id : %s, but got %s", expectedTenantID, tenantID)
+	if tenantID != "faketenantid" {
+		t.Errorf("expected tenant Id : %s, but got %s", "faketenantid", tenantID)
 	}
 }
 
 func TestGetTenantID_UnexpectedResponse(t *testing.T) {
-
-	tearDown := setup()
-	defer tearDown()
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	defer server.Close()
 
 	mux.HandleFunc("/subscriptions/foobarsubscription", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	})
 
-	_, err := GetTenantID("foobarsubscription")
+	_, err := GetTenantID(&azfake.TokenCredential{}, "foobarsubscription", nil)
 
 	expectedMsg := "Unexpected response from Get Subscription: 400"
 
@@ -65,16 +78,16 @@ func TestGetTenantID_UnexpectedResponse(t *testing.T) {
 }
 
 func TestGetTenantID_InvalidHeader(t *testing.T) {
-
-	tearDown := setup()
-	defer tearDown()
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	defer server.Close()
 
 	mux.HandleFunc("/subscriptions/foobarsubscription", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		w.Header().Set("fookey", "bazvalue")
 	})
 
-	_, err := GetTenantID("foobarsubscription")
+	_, err := GetTenantID(&azfake.TokenCredential{}, "foobarsubscription", nil)
 
 	expectedMsg := "Header WWW-Authenticate not found in Get Subscription response"
 
@@ -84,9 +97,9 @@ func TestGetTenantID_InvalidHeader(t *testing.T) {
 }
 
 func TestGetTenantID_InvalidHeaderValue(t *testing.T) {
-
-	tearDown := setup()
-	defer tearDown()
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	defer server.Close()
 
 	mux.HandleFunc("/subscriptions/foobarsubscription", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("WWW-Authenticate", `sample_invalid_auth_uri`)
@@ -94,7 +107,7 @@ func TestGetTenantID_InvalidHeaderValue(t *testing.T) {
 		_, _ = w.Write([]byte("Unauthorized"))
 	})
 
-	_, err := GetTenantID("foobarsubscription")
+	_, err := GetTenantID(&azfake.TokenCredential{}, "foobarsubscription", nil)
 
 	expectedMsg := "Could not find the tenant ID in header: WWW-Authenticate \"sample_invalid_auth_uri\""
 

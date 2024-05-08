@@ -38,8 +38,8 @@ func (e *DeploymentError) Error() string {
 			}
 		}
 	}
-	return fmt.Sprintf("DeploymentName[%s] ResourceGroup[%s] TopError[%s] StatusCode[%d] ProvisioningState[%s] Operations[%s]",
-		e.DeploymentName, e.ResourceGroup, str, &e.StatusCode, e.ProvisioningState, strings.Join(ops, " | "))
+	return fmt.Sprintf("DeploymentName[%s] ResourceGroup[%s] TopError[%s] ProvisioningState[%s] Operations[%s]",
+		e.DeploymentName, e.ResourceGroup, str, e.ProvisioningState, strings.Join(ops, " | "))
 }
 
 // DeploymentValidationError contains validation error

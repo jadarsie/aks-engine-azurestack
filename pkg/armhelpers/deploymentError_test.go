@@ -140,7 +140,7 @@ func TestDeploymentError_Error(t *testing.T) {
 		OperationsLists:   operations,
 	}
 	errString := deploymentErr.Error()
-	expected := `DeploymentName[agentvm] ResourceGroup[rg1] TopError[sample error] Response[sample resp] ProvisioningState[Failed] Operations[{
+	expected := `DeploymentName[agentvm] ResourceGroup[rg1] TopError[sample error] ProvisioningState[Failed] Operations[{
   "message": "sample status message"
 }]`
 	if errString != expected {

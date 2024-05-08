@@ -6,6 +6,8 @@ package armhelpers
 import (
 	"context"
 	"testing"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/fake"
 )
 
 func TestDeleteNetworkInterface(t *testing.T) {
@@ -24,7 +26,7 @@ func TestDeleteNetworkInterface(t *testing.T) {
 	defer mc.DeactivateAndReset()
 
 	env := mc.GetEnvironment()
-	azureClient, err := NewAzureClientWithClientSecret(env, subscriptionID, "clientID", "secret")
+	azureClient, err := NewAzureClient(env, subscriptionID, &fake.TokenCredential{}, nil)
 	if err != nil {
 		t.Fatalf("can not get client %s", err)
 	}

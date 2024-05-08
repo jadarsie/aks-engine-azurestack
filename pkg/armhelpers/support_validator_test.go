@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/Azure/aks-engine-azurestack/pkg/api"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/fake"
 )
 
 func TestValidateRequiredImages(t *testing.T) {
@@ -26,7 +27,7 @@ func TestValidateRequiredImages(t *testing.T) {
 	defer mc.DeactivateAndReset()
 
 	env := mc.GetEnvironment()
-	azureClient, err := NewAzureClientWithClientSecret(env, subscriptionID, "clientID", "secret")
+	azureClient, err := NewAzureClient(env, subscriptionID, &fake.TokenCredential{}, nil)
 	if err != nil {
 		t.Fatalf("can not get client %s", err)
 	}
@@ -73,7 +74,7 @@ func TestValidateRequiredImagesMissingImageCase(t *testing.T) {
 	defer mc.DeactivateAndReset()
 
 	env := mc.GetEnvironment()
-	azureClient, err := NewAzureClientWithClientSecret(env, subscriptionID, "clientID", "secret")
+	azureClient, err := NewAzureClient(env, subscriptionID, &fake.TokenCredential{}, nil)
 	if err != nil {
 		t.Fatalf("can not get client %s", err)
 	}

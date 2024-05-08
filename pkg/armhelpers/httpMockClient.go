@@ -232,7 +232,7 @@ func (mc HTTPMockClient) GetEnvironment() azure.Environment {
 // RegisterLogin registers the mock response for login
 func (mc HTTPMockClient) RegisterLogin() {
 	mc.mux.HandleFunc(fmt.Sprintf("/subscriptions/%s", mc.SubscriptionID), func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Query().Get("api-version") != "2018-06-01" {
+		if r.URL.Query().Get("api-version") != "2016-06-01" {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
 			w.Header().Add("Www-Authenticate", fmt.Sprintf(`Bearer authorization_uri="https://login.windows.net/%s", error="invalid_token", error_description="The authentication failed because of missing 'Authorization' header."`, mc.TenantID))

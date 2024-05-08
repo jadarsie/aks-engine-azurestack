@@ -7,10 +7,11 @@ import (
 	"context"
 	"net/http"
 	"regexp"
-	"time"
 
-	subscriptions "github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/resources/armsubscriptions"
+	// subscriptions "github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/resources/armsubscriptions"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armsubscriptions"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -19,18 +20,15 @@ import (
 // unauthenticated request to the Get Subscription Details endpoint and parses
 // the value from WWW-Authenticate header.
 // TODO this should probably to to the armhelpers library
-func GetTenantID(subscriptionID string) (string, error) {
+func GetTenantID(creds azcore.TokenCredential, subscriptionID string, options *arm.ClientOptions) (string, error) {
 	const hdrKey = "WWW-Authenticate"
-	c, _ := subscriptions.NewClient(nil, nil)
-
 	log.Debugf("Resolving tenantID for subscriptionID: %s", subscriptionID)
+	c, _ := armsubscriptions.NewClient(creds, options)
 
 	// we expect this request to fail (err != nil), but we are only interested
 	// in headers, so surface the error if the Response is not present (i.e.
 	// network error etc)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*150)
-	defer cancel()
-	_, err := c.Get(ctx, subscriptionID, nil)
+	_, err := c.Get(context.Background(), subscriptionID, nil)
 
 	var responseErr *azcore.ResponseError
 	errors.As(err, &responseErr)

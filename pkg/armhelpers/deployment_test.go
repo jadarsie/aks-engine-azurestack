@@ -7,6 +7,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/fake"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -27,7 +28,7 @@ func TestDeployTemplate(t *testing.T) {
 	defer mc.DeactivateAndReset()
 
 	env := mc.GetEnvironment()
-	azureClient, err := NewAzureClientWithClientSecret(env, subscriptionID, "clientID", "secret")
+	azureClient, err := NewAzureClient(env, subscriptionID, &fake.TokenCredential{}, nil)
 	if err != nil {
 		t.Fatalf("can not get client %s", err)
 	}
@@ -55,7 +56,7 @@ func TestDeployTemplateSync(t *testing.T) {
 	defer mc.DeactivateAndReset()
 
 	env := mc.GetEnvironment()
-	azureClient, err := NewAzureClientWithClientSecret(env, subscriptionID, "clientID", "secret")
+	azureClient, err := NewAzureClient(env, subscriptionID, &fake.TokenCredential{}, nil)
 	if err != nil {
 		t.Fatalf("can not get client %s", err)
 	}
