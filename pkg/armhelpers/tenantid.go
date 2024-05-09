@@ -11,6 +11,8 @@ import (
 	subscriptions "github.com/Azure/azure-sdk-for-go/profile/p20200901/resourcemanager/resources/armsubscriptions"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/fake"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,11 +20,14 @@ import (
 // GetTenantID figures out the AAD tenant ID of the subscription by making an
 // unauthenticated request to the Get Subscription Details endpoint and parses
 // the value from WWW-Authenticate header.
-// TODO this should probably to to the armhelpers library
-func GetTenantID(credential azcore.TokenCredential, subscriptionID string, options *arm.ClientOptions) (string, error) {
+func GetTenantID(subscriptionID string, cloud cloud.Configuration) (string, error) {
 	const hdrKey = "WWW-Authenticate"
 	log.Debugf("Resolving tenantID for subscriptionID: %s", subscriptionID)
-	c, _ := subscriptions.NewClient(credential, options)
+	c, _ := subscriptions.NewClient(&fake.TokenCredential{}, &arm.ClientOptions{
+		ClientOptions: azcore.ClientOptions{
+			Cloud: cloud,
+		},
+	})
 
 	// we expect this request to fail (err != nil), but we are only interested
 	// in headers, so surface the error if the Response is not present (i.e.

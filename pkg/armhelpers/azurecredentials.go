@@ -9,9 +9,7 @@ import (
 	"encoding/pem"
 	"os"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/cloud"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/fake"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/policy"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/pkg/errors"
@@ -19,7 +17,7 @@ import (
 
 // NewClientSecretCredential returns an AzureClient via client_id and client_secret
 func NewClientSecretCredential(subscriptionID, clientID, clientSecret string, cloud cloud.Configuration) (*azidentity.ClientSecretCredential, error) {
-	tenantID, err := getOAuthConfig(&fake.TokenCredential{}, subscriptionID)
+	tenantID, err := getOAuthConfig(subscriptionID, cloud)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +67,7 @@ func NewClientCertificateCredential(subscriptionID, clientID, certificatePath, p
 	if err != nil {
 		return nil, errors.Wrap(err, "Failed to parse rsa private key")
 	}
-	tenantID, err := getOAuthConfig(&fake.TokenCredential{}, subscriptionID)
+	tenantID, err := getOAuthConfig(subscriptionID, cloud)
 	if err != nil {
 		return nil, err
 	}
@@ -111,8 +109,8 @@ func NewClientCertificateCredentialExternalTenant(subscriptionID, clientID, cert
 	return azidentity.NewClientCertificateCredential("adfs", clientID, []*x509.Certificate{certificate}, privateKey, options)
 }
 
-func getOAuthConfig(credential azcore.TokenCredential, subscriptionID string) (string, error) {
-	tenantID, err := GetTenantID(credential, subscriptionID, nil)
+func getOAuthConfig(subscriptionID string, cloud cloud.Configuration) (string, error) {
+	tenantID, err := GetTenantID(subscriptionID, cloud)
 	if err != nil {
 		return "", err
 	}
